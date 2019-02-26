@@ -1,0 +1,71 @@
+---
+title: "621 Report 1"
+author: "simplymathematics"
+date: "February 25, 2019"
+output: html_document
+---
+
+# CUNY SPS 621
+## Report 1
+
+## Dependencies
+
+```{r}
+library(ggplot2)
+library(reshape2)
+```
+
+## Data Exploration
+
+```{r}
+training <- read.csv(file = "moneyball-training-data.csv")
+test <- read.csv(file = "moneyball-evaluation-data.csv")
+training
+```
+
+
+```{r}
+
+i <- 1
+columns <- colnames(training)
+columns <- columns
+
+means <- as.numeric(as.character(sapply(training, mean, na.rm = TRUE)))
+sds <- as.numeric(as.character(sapply(training, sd, na.rm = TRUE)))
+columns <- columns[-1]
+explore.data <- as.data.frame(rbind(columns, means, sds), row.names = columns)
+explore.data$INDEX <- NULL
+
+explore.data <- as.data.frame(t(explore.data))
+colnames(explore.data) <- c('statistic', "mean", "sd")
+explore.data
+```
+
+
+
+```{r}
+explore.data$mean <- as.numeric(as.character(explore.data$mean))
+explore.data$sd <- as.numeric(as.character(explore.data$sd))
+
+img <- ggplot(explore.data, aes(x = statistic, y=mean)) +
+  geom_bar(stat = "identity") + 
+  coord_flip() + 
+  labs(title = "Boxplots of Each Column", x = "Statistic Mean", y = "Statistic")+
+  theme(panel.background = element_blank())
+img + geom_errorbar(aes(ymin=mean-sd, ymax=mean + sd), width=.2,
+                 position=position_dodge(.9))
+```
+
+```{r}
+correlation.matrix <- round(cor(training),2)
+melted <- melt(correlation.matrix)
+ggplot(melted, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile()
+```
+ 
+## Data Preparation
+
+## Build Models
+
+## Select Models
+
