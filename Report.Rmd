@@ -131,7 +131,18 @@ boxplot(x)
 
 ## Build Models
 
-
+```{r}
+model1 <- lm(target ~ training$TEAM_FIELDING_E + training$TEAM_PITCHING_BB + training$TEAM_BATTING_BB + training$TEAM_BATTING_H + training$TEAM_PITCHING_H + training$TEAM_PITCHING_BB, data = training)
+summary(model1)
+```
+```{r}
+model2 <- lm(target ~ training$TEAM_FIELDING_E + training$TEAM_PITCHING_BB + training$TEAM_BATTING_BB + training$TEAM_BATTING_H + training$TEAM_PITCHING_H + training$TEAM_PITCHING_BB + training$TEAM_BATTING_SO + training$TEAM_BATTING_H, data = training)
+summary(model2)
+```
+```{r,}
+model3 <- lm(target ~  training$TEAM_PITCHING_BB + training$TEAM_BATTING_BB + training$TEAM_PITCHING_BB + training$TEAM_BATTING_SO + training$TEAM_BATTING_H, data = training)
+summary(model3)
+```
 
 ## Select Models
-
+model 2
