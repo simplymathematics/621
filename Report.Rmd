@@ -10,24 +10,28 @@ output: html_document
 
 ## Dependencies
 
-```{r}
+```{r, echo = FALSE}
 library(ggplot2)
 library(reshape2)
+library(randomForest, quietly = TRUE)
 ```
 
 ## Data Exploration
 
-```{r}
+```{r, echo = FALSE}
 training <- read.csv(file = "moneyball-training-data.csv")
 test <- read.csv(file = "moneyball-evaluation-data.csv")
-training
+training <- na.omit(training)
+target <- training$TARGET_WINS
+training$TARGET_WINS <- NULL
 ```
 
 
-```{r}
+```{r, echo = FALSE}
 
 i <- 1
 columns <- colnames(training)
+training$INDEX <- NULL
 columns <- columns
 
 means <- as.numeric(as.character(sapply(training, mean, na.rm = TRUE)))
@@ -38,31 +42,40 @@ explore.data$INDEX <- NULL
 
 explore.data <- as.data.frame(t(explore.data))
 colnames(explore.data) <- c('statistic', "mean", "sd")
-explore.data
 ```
 
+### Summary Statistics
 
-
-```{r}
+```{r, echo = FALSE}
 explore.data$mean <- as.numeric(as.character(explore.data$mean))
 explore.data$sd <- as.numeric(as.character(explore.data$sd))
 
 img <- ggplot(explore.data, aes(x = statistic, y=mean)) +
   geom_bar(stat = "identity") + 
   coord_flip() + 
-  labs(title = "Boxplots of Each Column", x = "Statistic Mean", y = "Statistic")+
+  labs(title = "Boxplots of Each Column", x = "Statistic", y = "Statistic Mean")+
   theme(panel.background = element_blank())
 img + geom_errorbar(aes(ymin=mean-sd, ymax=mean + sd), width=.2,
                  position=position_dodge(.9))
 ```
-
+We can see that our data spans many orders of magnitude. This tells us that the our model will have some kind of scaling or normalization factor to compensate.
 ```{r}
-correlation.matrix <- round(cor(training),2)
+wins <- target
+this <- cbind(training, wins)
+correlation.matrix <- round(cor(this),2)
 melted <- melt(correlation.matrix)
 ggplot(melted, aes(x = Var1, y = Var2, fill = value)) +
-  geom_tile()
+  geom_tile() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  labs("Correlation Matrix", x = "",  y = "")
 ```
- 
+This correlation matrix shows us the correlation between each column in our data set. Notice how it is symmetric and the minor diagonal has a value of 1 in every cell. Since we're predicting wins, we can look at the top row. The lightest cells correspond to the data vectors that are most positively correlated. This includes ```TEAM_PITCHING_BB```, ```TEAM_PITCHING_HR```, ```TEAM_PITCHING_H```,  ```TEAM_BATTING_BB```,  and ```TEAM_BATTING_H```. These are highly colinear themselves, so one of these should be enough. The data vectors that correspond to the highest negative correlation are ```TEAM_PITCHING_SO```, ```TEAM_FIELDING_E```, and ```TEAM_FIELDING_DP.``` These are not particularly colinear, so our model will likely include all of these. Below, we use a random forest classifier to see which data effects the wins the most. This tool runs many linear and multilinear simulations to see which data vectors explain the most variance in the model.
+```{r}
+fit <- randomForest(training,target, importance = TRUE, ntree = 1000)
+varImpPlot(fit)
+```
+As we can see ```TEAM_FIELDING_E```, ```TEAM_PITCHING_BB```, ```TEAM_BATTING_BB```,  ```TEAM_BATTING_H```, ```TEAM_PITCHING_H```, and ```TEAM_FIELDING_E``` have the highest importance, corroborating our correlation matrix above.
+
 ## Data Preparation
 
 ## Build Models
