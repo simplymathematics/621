@@ -74,11 +74,64 @@ This correlation matrix shows us the correlation between each column in our data
 fit <- randomForest(training,target, importance = TRUE, ntree = 1000)
 varImpPlot(fit)
 ```
-As we can see ```TEAM_FIELDING_E```, ```TEAM_PITCHING_BB```, ```TEAM_BATTING_BB```,  ```TEAM_BATTING_H```, ```TEAM_PITCHING_H```, and ```TEAM_FIELDING_E``` have the highest importance, corroborating our correlation matrix above.
+As we can see ```TEAM_FIELDING_E```, ```TEAM_PITCHING_BB```, ```TEAM_BATTING_BB```,  ```TEAM_BATTING_H```, ```TEAM_PITCHING_H```, and ```TEAM_PITCHING_BB``` have the highest importance, corroborating our correlation matrix above.
 
 ## Data Preparation
 
+```{r, echo = FALSE}
+x <- training$TEAM_FIELDING_E
+plot(x)
+shapiro.test(x)
+qqnorm(x)
+boxplot(x)
+```
+```{r, echo = FALSE}
+x <- training$TEAM_FIELDING_E
+plot(x)
+shapiro.test(x)
+qqnorm(x)
+boxplot(x)
+```
+```{r, echo = FALSE}
+x <- training$TEAM_PITCHING_BB
+plot(x)
+shapiro.test(x)
+qqnorm(x)
+boxplot(x)
+```
+```{r, echo = FALSE}
+x <- training$TEAM_BATTING_BB
+plot(x)
+shapiro.test(x)
+qqnorm(x)
+boxplot(x)
+```
+```{r, echo = FALSE}
+x <- training$TEAM_BATTING_H
+plot(x)
+shapiro.test(x)
+qqnorm(x)
+boxplot(x)
+```
+```{r, echo = FALSE}
+x <- training$TEAM_PITCHING_H
+plot(x)
+shapiro.test(x)
+qqnorm(x)
+boxplot(x)
+```
+
+```{r, echo = FALSE}
+x <- training$TEAM_PITCHING_BB
+plot(x)
+shapiro.test(x)
+qqnorm(x)
+boxplot(x)
+```
+
 ## Build Models
+
+
 
 ## Select Models
 
