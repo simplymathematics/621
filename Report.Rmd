@@ -1,6 +1,6 @@
 ---
 title: "Data_621_HW1"
-author: "Olga Shiligin"
+author: "Group 2"
 date: "14/02/2019"
 output: html_document
 ---
