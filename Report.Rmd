@@ -165,6 +165,7 @@ TEAM_PITCHING_H, TEAM_PITCHING_SO did not pass the check for non-linearity. So, 
 moneyball_filled$TEAM_PITCHING_H<- log10(moneyball_filled$TEAM_PITCHING_H+0.1)
 moneyball_filled$TEAM_PITCHING_SO<- log10(moneyball_filled$TEAM_PITCHING_SO+0.1)
 
+
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 crPlots(model)
@@ -217,7 +218,7 @@ summary(model_basic)
 ## Model Evaluation
 Using our finished model above, we can predict the number of wins for each team. We rounded to a whole number so that the finished values have some real world analogue. The F-statistics has a p value of basically 0, so we can determine that our model is statistically significant.
 ```{r, echo = FALSE}
-round(predict(model, test_data),0)
+round(predict(model, test_filled),0)
 
 ```
 
@@ -226,7 +227,5 @@ Additionally, we can use a residual plot to verify our model. However, we can se
 ```{r, echo = FALSE}
 tmp <- lm(model, data = moneyball_filled)
 res <- resid(tmp)
-
 plot(moneyball_filled$TARGET_WINS, res, ylab = "Residuals", xlab = "WINS", main = "WINS")
-
 ```
