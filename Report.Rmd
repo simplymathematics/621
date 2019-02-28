@@ -1,156 +1,230 @@
 ---
-title: "621 Report 1"
-author: "simplymathematics"
-date: "February 25, 2019"
+title: "Data_621_HW1"
+author: "Olga Shiligin"
+date: "14/02/2019"
 output: html_document
 ---
 
-# CUNY SPS 621
-## Report 1
+Introduction
+-------------
 
-## Dependencies
 
-```{r, echo = FALSE}
-library(ggplot2)
-library(reshape2)
-library(randomForest, quietly = TRUE)
-```
-
-## Data Exploration
+Loading necessary package
 
 ```{r, echo = FALSE}
-training <- read.csv(file = "moneyball-training-data.csv")
-test <- read.csv(file = "moneyball-evaluation-data.csv")
-training <- na.omit(training)
-target <- training$TARGET_WINS
-training$TARGET_WINS <- NULL
+library(dplyr, quietly = TRUE)
+library(tidyr, quietly = TRUE)
+library(ggplot2, quietly = TRUE)
+library(car, quietly = TRUE)
+library(corrplot, quietly = TRUE)
+library(Hmisc, quietly = TRUE)
+library(psych, quietly = TRUE)
+library (MASS, quietly = TRUE)
+library(lmtest, quietly = TRUE)
+library(faraway, quietly = TRUE)
 ```
 
+1-2. Data Exploration and Data Preparation
+
+a. Mean/St dev/ Median
 
 ```{r, echo = FALSE}
-
-i <- 1
-columns <- colnames(training)
-training$INDEX <- NULL
-columns <- columns
-
-means <- as.numeric(as.character(sapply(training, mean, na.rm = TRUE)))
-sds <- as.numeric(as.character(sapply(training, sd, na.rm = TRUE)))
-columns <- columns[-1]
-explore.data <- as.data.frame(rbind(columns, means, sds), row.names = columns)
-explore.data$INDEX <- NULL
-
-explore.data <- as.data.frame(t(explore.data))
-colnames(explore.data) <- c('statistic', "mean", "sd")
+train_data <- "moneyball-training-data.csv"
+test_data <- "moneyball-evaluation-data.csv"
+moneyball_data <- read.csv(train_data, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+test_data <- read.csv(test_data, header = TRUE, stringsAsFactors = FALSE)
 ```
 
-### Summary Statistics
+b. missing variables and missing values handling process
 
-```{r, echo = FALSE}
-explore.data$mean <- as.numeric(as.character(explore.data$mean))
-explore.data$sd <- as.numeric(as.character(explore.data$sd))
-
-img <- ggplot(explore.data, aes(x = statistic, y=mean)) +
-  geom_bar(stat = "identity") + 
-  coord_flip() + 
-  labs(title = "Boxplots of Each Column", x = "Statistic", y = "Statistic Mean")+
-  theme(panel.background = element_blank())
-img + geom_errorbar(aes(ymin=mean-sd, ymax=mean + sd), width=.2,
-                 position=position_dodge(.9))
-```
-We can see that our data spans many orders of magnitude. This tells us that the our model will have some kind of scaling or normalization factor to compensate.
 ```{r}
-wins <- target
-this <- cbind(training, wins)
-correlation.matrix <- round(cor(this),2)
-melted <- melt(correlation.matrix)
-ggplot(melted, aes(x = Var1, y = Var2, fill = value)) +
-  geom_tile() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  labs("Correlation Matrix", x = "",  y = "")
+sapply(moneyball_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
+sapply(test_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
 ```
-This correlation matrix shows us the correlation between each column in our data set. Notice how it is symmetric and the minor diagonal has a value of 1 in every cell. Since we're predicting wins, we can look at the top row. The lightest cells correspond to the data vectors that are most positively correlated. This includes ```TEAM_PITCHING_BB```, ```TEAM_PITCHING_HR```, ```TEAM_PITCHING_H```,  ```TEAM_BATTING_BB```,  and ```TEAM_BATTING_H```. These are highly colinear themselves, so one of these should be enough. The data vectors that correspond to the highest negative correlation are ```TEAM_PITCHING_SO```, ```TEAM_FIELDING_E```, and ```TEAM_FIELDING_DP.``` These are not particularly colinear, so our model will likely include all of these. Below, we use a random forest classifier to see which data effects the wins the most. This tool runs many linear and multilinear simulations to see which data vectors explain the most variance in the model.
+
+removing "index" and "TEAM_BATTING_HBP" columns as "TEAM_BATTING_HBP" has 92% of missing values"
+
 ```{r}
-fit <- randomForest(training,target, importance = TRUE, ntree = 1000)
-varImpPlot(fit)
-```
-As we can see ```TEAM_FIELDING_E```, ```TEAM_PITCHING_BB```, ```TEAM_BATTING_BB```,  ```TEAM_BATTING_H```, ```TEAM_PITCHING_H```, and ```TEAM_PITCHING_BB``` have the highest importance, corroborating our correlation matrix above.
+moneyball_data<-subset(moneyball_data, select = -c(INDEX))
+moneyball<-subset(moneyball_data, select = -c(TEAM_BATTING_HBP))
 
-## Data Preparation
-
-```{r, echo = FALSE}
-x <- training$TEAM_FIELDING_E
-plot(x)
-shapiro.test(x)
-qqnorm(x)
-boxplot(x)
-```
-```{r, echo = FALSE}
-x <- training$TEAM_FIELDING_E
-plot(x)
-shapiro.test(x)
-qqnorm(x)
-boxplot(x)
-```
-```{r, echo = FALSE}
-x <- training$TEAM_PITCHING_BB
-plot(x)
-shapiro.test(x)
-qqnorm(x)
-boxplot(x)
-```
-```{r, echo = FALSE}
-x <- training$TEAM_BATTING_BB
-plot(x)
-shapiro.test(x)
-qqnorm(x)
-boxplot(x)
-```
-```{r, echo = FALSE}
-x <- training$TEAM_BATTING_H
-plot(x)
-shapiro.test(x)
-qqnorm(x)
-boxplot(x)
-```
-```{r, echo = FALSE}
-x <- training$TEAM_PITCHING_H
-plot(x)
-shapiro.test(x)
-qqnorm(x)
-boxplot(x)
+test_data <- subset(test_data, select = -c(INDEX))
+test_data <- subset(test_data, select = -c(TEAM_BATTING_HBP))
 ```
 
-```{r, echo = FALSE}
-x <- training$TEAM_PITCHING_BB
-plot(x)
-shapiro.test(x)
-qqnorm(x)
-boxplot(x)
-```
+replacing other missing values with mean
 
-## Build Models
-A naive model using these data points nets us an adjusted $R^2$ value of .43. That is, 43% of the variance in the dataset is explained by this model.
-```{r, echo= FALSE}
-model1 <- lm(target ~ training$TEAM_FIELDING_E + training$TEAM_PITCHING_BB + training$TEAM_BATTING_BB + training$TEAM_BATTING_H + training$TEAM_PITCHING_H + training$TEAM_PITCHING_BB, data = training)
-summary(model1)
-```
-So, in an attempt to improve that score, we added the next most important data vectors, namely the strikeout statistics. That improved our adjusted $R^2$ a little bit, with our model explaining 44% of the variance in the dataset.
+```{r}
+replace_mean <- function(x){
+  x <- as.numeric(as.character(x))
+  x[is.na(x)] = mean(x, na.rm=TRUE)
+  return(x)
+}
 
-```{r, echo = FALSE}
-model2 <- lm(target ~ training$TEAM_FIELDING_E + training$TEAM_PITCHING_BB + training$TEAM_BATTING_BB + training$TEAM_BATTING_H + training$TEAM_PITCHING_H + training$TEAM_PITCHING_BB + training$TEAM_BATTING_SO, data = training)
-summary(model2)
-```
-This time, I added all of the data that we had available, yielding our highest adjusted $R^2$ value yet, with 51% of the variance in the dataset explained by our model. We assumed that since this is a job that cares deeply about the win/loss record of professional baseball teams. We assume that this company is betting on the games and a model that works >50% of the time will suffice for our purposes.
-```{r, echo = FALSE}
-model3 <- lm(target ~  training$TEAM_PITCHING_H + training$TEAM_PITCHING_HR + training$TEAM_PITCHING_BB + training$TEAM_PITCHING_SO + training$TEAM_BATTING_H + training$TEAM_BATTING_2B + training$TEAM_BATTING_3B + training$TEAM_BATTING_BB + training$TEAM_BATTING_SO + training$TEAM_BATTING_HBP + training$TEAM_BASERUN_SB + training$TEAM_BASERUN_CS + training$TEAM_FIELDING_E + training$TEAM_FIELDING_DP, data = training)
-summary(model3)
+moneyball_filled <- apply(moneyball, 2, replace_mean)
+moneyball_filled <- as.data.frame(moneyball_filled)
+
+test_filled <- apply(test_data, 2, replace_mean)
+test_filled <- as.data.frame(test_data)
+
+
 ```
 
 
+c. Bar Chart/ Box Plot/ Histogram
 
 
-## Select Models
-Model 3
+```{r, echo = FALSE}
+par(mfrow = c(3,5))
+plot(density(moneyball_filled$TARGET_WINS))
+plot(density(moneyball_filled$TEAM_BATTING_H))
+plot(density(moneyball_filled$TEAM_BATTING_2B))
+plot(density(moneyball_filled$TEAM_BATTING_3B))
+plot(density(moneyball_filled$TEAM_BATTING_HR))
+plot(density(moneyball_filled$TEAM_BATTING_BB))
+plot(density(moneyball_filled$TEAM_BATTING_SO))
+plot(density(moneyball_filled$TEAM_BASERUN_SB))
+plot(density(moneyball_filled$TEAM_BASERUN_CS))
+plot(density(moneyball_filled$TEAM_PITCHING_H))
+plot(density(moneyball_filled$TEAM_PITCHING_HR))
+plot(density(moneyball_filled$TEAM_PITCHING_BB))
+plot(density(moneyball_filled$TEAM_PITCHING_SO))
+plot(density(moneyball_filled$TEAM_FIELDING_E))
+plot(density(moneyball_filled$TEAM_FIELDING_DP))
+```
+
+Target variable plot
+
+```{r}
+plot(moneyball_filled$TARGET_WINS)
+hist(moneyball_filled$TARGET_WINS)
+boxplot(moneyball_filled$TARGET_WINS)
+summary(moneyball_filled$TARGET_WINS)
+```
+
+d. correlation variables to each other and to target
+
+Checking for variable dependencies, as all variables are numeric we will rely on correleation.
+
+```{r}
+corr_moneyball<- cor(moneyball_filled)
+round(corr_moneyball, digits =3)
+corrplot(corr_moneyball, method = "circle")
+```
+
+- poor correlation with target (p<0.1): TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B
+   
+- strong correlation between each others (>0.6): TEAM_PITCHING_HR vs TEAM_BATTING_HR (0.969); TEAM_BATTING_HR VS TEAM_BATTING_SO (0.693), TEAM_BATTING_3B VS TEAM_BATTING_SO (-0.656)
+
+Possible variables to remove: TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B, TEAM_BATTING_HR
+
+
+3. Modeling
+------------
+
+Backward elimination method: 
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_BB + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Removing TEAM_PITCHING_BB
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Removing TEAM_BASERUN_CS
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Removing TEAM_PITCHING_HR
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+
+Checking for non-linearity
+--------------------------
+
+```{r}
+crPlots(model)
+```
+
+TEAM_PITCHING_H, TEAM_PITCHING_SO did not pass the check for non-linerity.
+
+
+Let's transform TEAM_PITCHING_H, TEAM_PITCHING_SO and re-fit the model
+
+
+```{r}
+moneyball_filled$TEAM_PITCHING_H<- log10(moneyball_filled$TEAM_PITCHING_H+0.1)
+moneyball_filled$TEAM_PITCHING_SO<- log10(moneyball_filled$TEAM_PITCHING_SO+0.1)
+
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+crPlots(model)
+```
+Removing TEAM_BATTING_SO with p-value > 0.05
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Eliminating extreme values
+--------------------------
+(using Cook's distance plot as 4/(n-k-1), identify D values > cutoff)
+
+```{r}
+cutoff<-4/((nrow(moneyball_filled)-length(model$coefficients)-2))
+plot(model, which = 4, cook.levels = cutoff)
+plot(model, which = 5, cook.levels = cutoff)
+moneyball_filled<-moneyball_filled[-which(rownames(moneyball_filled)
+                                          %in% c ("1828","1342","2233")),]
+```
+
+
+refit the model:
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Check and eliminate further extrimes if any
+
+```{r}
+cutoff<-4/((nrow(moneyball_filled)-length(model$coefficients)-2))
+plot(model, which = 4, cook.levels = cutoff)
+plot(model, which = 5, cook.levels = cutoff)
+
+```
+
+
+
+Checking for multicolliniarity
+------
+
+```{r}
+vif(model)
+plot(model)
+```
+
+TEAM_FIELDING_E is withing the range 5-10, but eliminating TEAM_FIELDING_E does not improve the model.
+
+```{r}
+model_basic<-lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_data)
+summary(model_basic)
+```
+
+## Model Evaluation
 
 
