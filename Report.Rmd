@@ -130,19 +130,27 @@ boxplot(x)
 ```
 
 ## Build Models
-
-```{r}
+A naive model using these data points nets us an adjusted $R^2$ value of .43. That is, 43% of the variance in the dataset is explained by this model.
+```{r, echo= FALSE}
 model1 <- lm(target ~ training$TEAM_FIELDING_E + training$TEAM_PITCHING_BB + training$TEAM_BATTING_BB + training$TEAM_BATTING_H + training$TEAM_PITCHING_H + training$TEAM_PITCHING_BB, data = training)
 summary(model1)
 ```
-```{r}
-model2 <- lm(target ~ training$TEAM_FIELDING_E + training$TEAM_PITCHING_BB + training$TEAM_BATTING_BB + training$TEAM_BATTING_H + training$TEAM_PITCHING_H + training$TEAM_PITCHING_BB + training$TEAM_BATTING_SO + training$TEAM_BATTING_H, data = training)
+So, in an attempt to improve that score, we added the next most important data vectors, namely the strikeout statistics. That improved our adjusted $R^2$ a little bit, with our model explaining 44% of the variance in the dataset.
+
+```{r, echo = FALSE}
+model2 <- lm(target ~ training$TEAM_FIELDING_E + training$TEAM_PITCHING_BB + training$TEAM_BATTING_BB + training$TEAM_BATTING_H + training$TEAM_PITCHING_H + training$TEAM_PITCHING_BB + training$TEAM_BATTING_SO, data = training)
 summary(model2)
 ```
-```{r,}
-model3 <- lm(target ~  training$TEAM_PITCHING_BB + training$TEAM_BATTING_BB + training$TEAM_PITCHING_BB + training$TEAM_BATTING_SO + training$TEAM_BATTING_H, data = training)
+This time, I added all of the data that we had available, yielding our highest adjusted $R^2$ value yet, with 51% of the variance in the dataset explained by our model. We assumed that since this is a job that cares deeply about the win/loss record of professional baseball teams. We assume that this company is betting on the games and a model that works >50% of the time will suffice for our purposes.
+```{r, echo = FALSE}
+model3 <- lm(target ~  training$TEAM_PITCHING_H + training$TEAM_PITCHING_HR + training$TEAM_PITCHING_BB + training$TEAM_PITCHING_SO + training$TEAM_BATTING_H + training$TEAM_BATTING_2B + training$TEAM_BATTING_3B + training$TEAM_BATTING_BB + training$TEAM_BATTING_SO + training$TEAM_BATTING_HBP + training$TEAM_BASERUN_SB + training$TEAM_BASERUN_CS + training$TEAM_FIELDING_E + training$TEAM_FIELDING_DP, data = training)
 summary(model3)
 ```
 
+
+
+
 ## Select Models
-model 2
+Model 3
+
+

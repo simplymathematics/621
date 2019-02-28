@@ -1,0 +1,230 @@
+---
+title: "Data_621_HW1"
+author: "Olga Shiligin"
+date: "14/02/2019"
+output: html_document
+---
+
+Introduction
+-------------
+
+
+Loading necessary package
+
+```{r, echo = FALSE}
+library(dplyr, quietly = TRUE)
+library(tidyr, quietly = TRUE)
+library(ggplot2, quietly = TRUE)
+library(car, quietly = TRUE)
+library(corrplot, quietly = TRUE)
+library(Hmisc, quietly = TRUE)
+library(psych, quietly = TRUE)
+library (MASS, quietly = TRUE)
+library(lmtest, quietly = TRUE)
+library(faraway, quietly = TRUE)
+```
+
+1-2. Data Exploration and Data Preparation
+
+a. Mean/St dev/ Median
+
+```{r, echo = FALSE}
+train_data <- "moneyball-training-data.csv"
+test_data <- "moneyball-evaluation-data.csv"
+moneyball_data <- read.csv(train_data, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
+test_data <- read.csv(test_data, header = TRUE, stringsAsFactors = FALSE)
+```
+
+b. missing variables and missing values handling process
+
+```{r}
+sapply(moneyball_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
+sapply(test_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
+```
+
+removing "index" and "TEAM_BATTING_HBP" columns as "TEAM_BATTING_HBP" has 92% of missing values"
+
+```{r}
+moneyball_data<-subset(moneyball_data, select = -c(INDEX))
+moneyball<-subset(moneyball_data, select = -c(TEAM_BATTING_HBP))
+
+test_data <- subset(test_data, select = -c(INDEX))
+test_data <- subset(test_data, select = -c(TEAM_BATTING_HBP))
+```
+
+replacing other missing values with mean
+
+```{r}
+replace_mean <- function(x){
+  x <- as.numeric(as.character(x))
+  x[is.na(x)] = mean(x, na.rm=TRUE)
+  return(x)
+}
+
+moneyball_filled <- apply(moneyball, 2, replace_mean)
+moneyball_filled <- as.data.frame(moneyball_filled)
+
+test_filled <- apply(test_data, 2, replace_mean)
+test_filled <- as.data.frame(test_data)
+
+
+```
+
+
+c. Bar Chart/ Box Plot/ Histogram
+
+
+```{r, echo = FALSE}
+par(mfrow = c(3,5))
+plot(density(moneyball_filled$TARGET_WINS))
+plot(density(moneyball_filled$TEAM_BATTING_H))
+plot(density(moneyball_filled$TEAM_BATTING_2B))
+plot(density(moneyball_filled$TEAM_BATTING_3B))
+plot(density(moneyball_filled$TEAM_BATTING_HR))
+plot(density(moneyball_filled$TEAM_BATTING_BB))
+plot(density(moneyball_filled$TEAM_BATTING_SO))
+plot(density(moneyball_filled$TEAM_BASERUN_SB))
+plot(density(moneyball_filled$TEAM_BASERUN_CS))
+plot(density(moneyball_filled$TEAM_PITCHING_H))
+plot(density(moneyball_filled$TEAM_PITCHING_HR))
+plot(density(moneyball_filled$TEAM_PITCHING_BB))
+plot(density(moneyball_filled$TEAM_PITCHING_SO))
+plot(density(moneyball_filled$TEAM_FIELDING_E))
+plot(density(moneyball_filled$TEAM_FIELDING_DP))
+```
+
+Target variable plot
+
+```{r}
+plot(moneyball_filled$TARGET_WINS)
+hist(moneyball_filled$TARGET_WINS)
+boxplot(moneyball_filled$TARGET_WINS)
+summary(moneyball_filled$TARGET_WINS)
+```
+
+d. correlation variables to each other and to target
+
+Checking for variable dependencies, as all variables are numeric we will rely on correleation.
+
+```{r}
+corr_moneyball<- cor(moneyball_filled)
+round(corr_moneyball, digits =3)
+corrplot(corr_moneyball, method = "circle")
+```
+
+- poor correlation with target (p<0.1): TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B
+   
+- strong correlation between each others (>0.6): TEAM_PITCHING_HR vs TEAM_BATTING_HR (0.969); TEAM_BATTING_HR VS TEAM_BATTING_SO (0.693), TEAM_BATTING_3B VS TEAM_BATTING_SO (-0.656)
+
+Possible variables to remove: TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B, TEAM_BATTING_HR
+
+
+3. Modeling
+------------
+
+Backward elimination method: 
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_BB + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Removing TEAM_PITCHING_BB
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Removing TEAM_BASERUN_CS
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Removing TEAM_PITCHING_HR
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+
+Checking for non-linearity
+--------------------------
+
+```{r}
+crPlots(model)
+```
+
+TEAM_PITCHING_H, TEAM_PITCHING_SO did not pass the check for non-linerity.
+
+
+Let's transform TEAM_PITCHING_H, TEAM_PITCHING_SO and re-fit the model
+
+
+```{r}
+moneyball_filled$TEAM_PITCHING_H<- log10(moneyball_filled$TEAM_PITCHING_H+0.1)
+moneyball_filled$TEAM_PITCHING_SO<- log10(moneyball_filled$TEAM_PITCHING_SO+0.1)
+
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+crPlots(model)
+```
+Removing TEAM_BATTING_SO with p-value > 0.05
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Eliminating extreme values
+--------------------------
+(using Cook's distance plot as 4/(n-k-1), identify D values > cutoff)
+
+```{r}
+cutoff<-4/((nrow(moneyball_filled)-length(model$coefficients)-2))
+plot(model, which = 4, cook.levels = cutoff)
+plot(model, which = 5, cook.levels = cutoff)
+moneyball_filled<-moneyball_filled[-which(rownames(moneyball_filled)
+                                          %in% c ("1828","1342","2233")),]
+```
+
+
+refit the model:
+
+```{r}
+model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
+summary(model)
+```
+
+Check and eliminate further extrimes if any
+
+```{r}
+cutoff<-4/((nrow(moneyball_filled)-length(model$coefficients)-2))
+plot(model, which = 4, cook.levels = cutoff)
+plot(model, which = 5, cook.levels = cutoff)
+
+```
+
+
+
+Checking for multicolliniarity
+------
+
+```{r}
+vif(model)
+plot(model)
+```
+
+TEAM_FIELDING_E is withing the range 5-10, but eliminating TEAM_FIELDING_E does not improve the model.
+
+```{r}
+model_basic<-lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_data)
+summary(model_basic)
+```
+
+## Model Evaluation
+
+
