@@ -23,10 +23,11 @@ library (MASS, quietly = TRUE)
 library(lmtest, quietly = TRUE)
 library(faraway, quietly = TRUE)
 ```
+##  Data Exploration and Data Preparation
 
-1-2. Data Exploration and Data Preparation
+### Mean/St dev/ Median
 
-a. Mean/St dev/ Median
+First, we read the training and test data in from the csvs in the repository. 
 
 ```{r, echo = FALSE}
 train_data <- "moneyball-training-data.csv"
@@ -35,14 +36,16 @@ moneyball_data <- read.csv(train_data, header=TRUE, stringsAsFactors=FALSE, file
 test_data <- read.csv(test_data, header = TRUE, stringsAsFactors = FALSE)
 ```
 
-b. missing variables and missing values handling process
+### Missing Variables
+
+Because there are so many missing data points, we are replacing each empty data point with the mean of that data column. Simply removing the data with omitted values removed 90% of our data because our dataset is so incomplete. Below is where we find the appropriate means.
 
 ```{r}
 sapply(moneyball_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
 sapply(test_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
 ```
 
-removing "index" and "TEAM_BATTING_HBP" columns as "TEAM_BATTING_HBP" has 92% of missing values"
+Next, we removed "index" and "TEAM_BATTING_HBP" columns as "TEAM_BATTING_HBP" has 92% of missing values" and "index" was just a counter.
 
 ```{r}
 moneyball_data<-subset(moneyball_data, select = -c(INDEX))
@@ -52,7 +55,7 @@ test_data <- subset(test_data, select = -c(INDEX))
 test_data <- subset(test_data, select = -c(TEAM_BATTING_HBP))
 ```
 
-replacing other missing values with mean
+Here is where we finally replace the missing data with the appropriate mean data.
 
 ```{r}
 replace_mean <- function(x){
@@ -73,6 +76,7 @@ test_filled <- as.data.frame(test_data)
 
 c. Bar Chart/ Box Plot/ Histogram
 
+Now that we have a 'good' dataset, we can look at some histograms for each data vector.
 
 ```{r, echo = FALSE}
 par(mfrow = c(3,5))
@@ -93,16 +97,21 @@ plot(density(moneyball_filled$TEAM_FIELDING_E))
 plot(density(moneyball_filled$TEAM_FIELDING_DP))
 ```
 
-Target variable plot
+Here we see that most variables are fairly normally distributed and span many orders of magnitude. This tells us that our model will have some kind scaling factor between our data vectors.
 
-```{r}
+
+### Target Variable Plot
+
+```{r, echo = FALSE}
 plot(moneyball_filled$TARGET_WINS)
 hist(moneyball_filled$TARGET_WINS)
 boxplot(moneyball_filled$TARGET_WINS)
 summary(moneyball_filled$TARGET_WINS)
 ```
 
-d. correlation variables to each other and to target
+
+
+### Correlation
 
 Checking for variable dependencies, as all variables are numeric we will rely on correleation.
 
