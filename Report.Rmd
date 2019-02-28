@@ -52,7 +52,7 @@ pre { /* Code block - determines code spacing between lines */
 }
 </style>
 
-# Assignment Overview 
+# Part 1: Overview 
 
 The purpose of this assignment is to explore, analyze and model professional baseball team performance from the years 1871 to 2006. Our objective is to build a multiple linear regression model on the provided data to predict the number of wins for the team.**
 
@@ -205,14 +205,14 @@ summary(model)
 
 We repeated the above procedure for TEAM_BASERUN_CS, netting us a score of 31.52%. By removing two variables we were able to oh-so-slightly increase our $R^2$ value while reducing the amount of data we have to track and the processing time for tracking it.
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
 By removing TEAM_PITCHING_HR, we increase our $R^2$ value one last time to 31.53%. 
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
@@ -220,7 +220,7 @@ summary(model)
 
 ## Checking for non-linearity
 
-Below we use the ```crPlots()``` function to check for non-linearity.
+Below we use the `crPlots()` function to check for non-linearity.
 
 ```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 crPlots(model)
@@ -238,8 +238,6 @@ crPlots(model)
 
 test_filled$TEAM_PITCHING_H<- log10(test_filled$TEAM_PITCHING_H+0.1)
 test_filled$TEAM_PITCHING_SO<- log10(test_filled$TEAM_PITCHING_SO+0.1)
-
-
 ```
 Now we remove `TEAM_BATTING_SO` because it has a p-value > 0.05.
 
@@ -276,24 +274,23 @@ plot(model)
 
 TEAM_FIELDING_E is withing the range 5-10 (suggesting co linearity with other variables), but eliminating TEAM_FIELDING_E does not improve the model. This yields our highest $R^2$ value with 40% of the variance explained by our model.
 
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model_basic<-lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_data)
 summary(model_basic)
 ```
 
-## Model Evaluation
-Using our finished model above, we can predict the number of wins for each team. We rounded to a whole number so that the finished values have some real world analogue. The F-statistics has a p value of basically 0, so we can determine that our model is statistically significant.
-```{r, echo = FALSE}
-round(predict(model, test_data),0)
+# Part 4: Model Evaluation
 
+Using our finished model above, we can predict the number of wins for each team. We rounded to a whole number so that the finished values have some real world analogue. The F-statistics has a p value of basically 0, so we can determine that our model is statistically significant.
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
+round(predict(model, test_data),0)
 ```
 
 Additionally, we can use a residual plot to verify our model. However, we can see from our residual plot that our model does not have good heteroscedasticity. Our model consistently over-predicts the wins of above-average teams and consistenly under-predicts the wins for below-average teams. This likely stems from our data handling techniques above that turned our absent data into the mean of their column. A model using more complete data will likely perform much better.
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 tmp <- lm(model, data = moneyball_filled)
 res <- resid(tmp)
 
 plot(moneyball_filled$TARGET_WINS, res, ylab = "Residuals", xlab = "WINS", main = "WINS")
-
 ```
