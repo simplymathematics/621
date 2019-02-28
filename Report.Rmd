@@ -107,7 +107,7 @@ summary(moneyball_filled$TARGET_WINS)
 
 ### Correlation
 
-Checking for variable dependencies, as all variables are numeric we will rely on correleation. Below is a correlation plot that highlights the correlation between various data vectors. Dark blue is a high, postive correlation and dark red is a large negative correlation.
+Checking for variable dependencies, as all variables are numeric we will rely on correlation. Below is a correlation plot that highlights the correlation between various data vectors. Dark blue is a high, positive correlation and dark red is a large negative correlation.
 
 ```{r, echo = FALSE}
 corr_moneyball<- cor(moneyball_filled)
@@ -115,7 +115,7 @@ round(corr_moneyball, digits =3)
 corrplot(corr_moneyball, method = "circle")
 ```
 
-Here we notice several variables have poor correlation with the target variable (p<0.1): TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B. However, others have trong correlation between each others (>0.6): TEAM_PITCHING_HR vs TEAM_BATTING_HR (0.969); TEAM_BATTING_HR VS TEAM_BATTING_SO (0.693), TEAM_BATTING_3B VS TEAM_BATTING_SO (-0.656). Due to colinearity or statistical irrelvance, we can remove: TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B, TEAM_BATTING_HR
+Here we notice several variables have poor correlation with the target variable (p<0.1): TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B. However, others have strong correlation between each others (>0.6): TEAM_PITCHING_HR vs TEAM_BATTING_HR (0.969); TEAM_BATTING_HR VS TEAM_BATTING_SO (0.693), TEAM_BATTING_3B VS TEAM_BATTING_SO (-0.656). Due to co-linearity or statistical irrelevance, we can remove: TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B, TEAM_BATTING_HR
 
 
 ## Modeling
@@ -128,7 +128,7 @@ model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TE
 summary(model)
 ```
 
-Then, we removed the least significant variable, TEAM_PITCHING_BB. This yieled a slight increase in our $R^2$ score at 31.5%.
+Then, we removed the least significant variable, TEAM_PITCHING_BB. This yielded a slight increase in our $R^2$ score at 31.5%.
 
 
 ```{r, echo = FALSE}
@@ -159,7 +159,7 @@ Below we use the ```crPlots()``` function to check for non-linearity.
 crPlots(model)
 ```
 
-TEAM_PITCHING_H, TEAM_PITCHING_SO did not pass the check for non-linerity. So, we will transform them and refit the model. We are using a log10 transform because these numbers span many orders of magnitude.
+TEAM_PITCHING_H, TEAM_PITCHING_SO did not pass the check for non-linearity. So, we will transform them and refit the model. We are using a log10 transform because these numbers span many orders of magnitude.
 
 ```{r}
 moneyball_filled$TEAM_PITCHING_H<- log10(moneyball_filled$TEAM_PITCHING_H+0.1)
@@ -183,7 +183,7 @@ summary(model)
 
 ### Eliminating Outliers
 
-Then, we used Cook's distance to identify extreme values, removing them as neccessary.
+Then, we used Cook's distance to identify extreme values, removing them as necessary.
 ```{r}
 cutoff<-4/((nrow(moneyball_filled)-length(model$coefficients)-2))
 plot(model, which = 4, cook.levels = cutoff)
@@ -207,7 +207,7 @@ vif(model)
 plot(model)
 ```
 
-TEAM_FIELDING_E is withing the range 5-10 (suggesting colinearity with other variables), but eliminating TEAM_FIELDING_E does not improve the model.
+TEAM_FIELDING_E is withing the range 5-10 (suggesting co linearity with other variables), but eliminating TEAM_FIELDING_E does not improve the model. This yields our highest $R^2$ value with 40% of the variance explained by our model.
 
 ```{r}
 model_basic<-lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_data)
@@ -215,7 +215,18 @@ summary(model_basic)
 ```
 
 ## Model Evaluation
-Using our finished model above, we can predict the number of wins for each team. We rounded to a whole number so that the finished values have some real world analogue.
+Using our finished model above, we can predict the number of wins for each team. We rounded to a whole number so that the finished values have some real world analogue. The F-statistics has a p value of basically 0, so we can determine that our model is statistically significant.
 ```{r, echo = FALSE}
-round(predict(model, test_filled),0)
+round(predict(model, test_data),0)
+
+```
+
+Additionally, we can use a residual plot to verify our model. However, we can see from our residual plot that our model does not have good heteroscedasticity. Our model consistently over-predicts the wins of above-average teams and consistenly under-predicts the wins for below-average teams. This likely stems from our data handling techniques above that turned our absent data into the mean of their column. A model using more complete data will likely perform much better.
+
+```{r, echo = FALSE}
+tmp <- lm(model, data = moneyball_filled)
+res <- resid(tmp)
+
+plot(moneyball_filled$TARGET_WINS, res, ylab = "Residuals", xlab = "WINS", main = "WINS")
+
 ```
