@@ -56,6 +56,8 @@ pre { /* Code block - determines code spacing between lines */
 
 The purpose of this assignment is to explore, analyze and model professional baseball team performance from the years 1871 to 2006. Our objective is to build a multiple linear regression model on the provided data to predict the number of wins for the team.**
 
+## Dependencies 
+
 Replication of our work requires the following dependencies:
 
 ```{r, eval = T, echo = T, comments = F, warning = F, message=F}
@@ -73,9 +75,7 @@ library(knitr)
 library(kableExtra)
 ```
 
-# Part 1: Data Preparation and Exploration
-
-## Raw Data Import
+## Data Preparation
 
 We first read the training and test data from the csv files located in our repository. 
 
@@ -85,6 +85,8 @@ test_data <- "moneyball-evaluation-data.csv"
 moneyball_data <- read.csv(train_data, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
 test_data <- read.csv(test_data, header = TRUE, stringsAsFactors = FALSE)
 ```
+
+# Part 2: Data Exploration
 
 Upon review of the dataset, we found large amounts of missing variables. We choose to replace the empty data points with the mean of that data column. The method was preferable to removing the data with omitted values, because that would have removed 90% of the provided data.  
 
@@ -163,7 +165,6 @@ boxplot(moneyball_filled$TARGET_WINS)
 summary(moneyball_filled$TARGET_WINS)
 ```
 
-
 ## Correlation
 
 We then checked for correlation among our dependent variables, as all variables are numeric we will rely on correlation. Below is a correlation plot that highlights the correlation between various data vectors. Dark blue is a high, positive correlation and dark red is a large negative correlation.
@@ -173,22 +174,31 @@ corr_moneyball<- cor(round(moneyball_filled, digits = 3))
 corrplot(corr_moneyball, method = "circle")
 ```
 
-Here, we notice several variables have poor correlation with the target variable (p<0.1): `TEAM_FIELDING_E`, `TEAM_BASERUN_CS`, `TEAM_BATTING_SO`, `TEAM_BATTING_3B`. However, others have strong correlation between each others (>0.6): `TEAM_PITCHING_HR` vs `TEAM_BATTING_HR` (0.969); `TEAM_BATTING_HR` VS `TEAM_BATTING_SO` (0.693), `TEAM_BATTING_3B` VS `TEAM_BATTING_SO` (-0.656). Due to co-linearity or statistical irrelevance, we can remove: `TEAM_FIELDING_E`, `TEAM_BASERUN_CS`, `TEAM_BATTING_SO`, `TEAM_BATTING_3B`, and `TEAM_BATTING_HR`.
+Here, we notice several variables have poor correlation with the target variable (p<0.1):  
+    - `TEAM_FIELDING_E`  
+    - `TEAM_BASERUN_CS`  
+    - `TEAM_BATTING_SO`  
+    - `TEAM_BATTING_3B`  
 
+However, others have strong correlation between each others (>0.6):   
+    - `TEAM_PITCHING_HR` vs `TEAM_BATTING_HR` (0.969)   
+    - `TEAM_BATTING_HR` vs `TEAM_BATTING_SO` (0.693)   
+    - `TEAM_BATTING_3B` vs `TEAM_BATTING_SO` (-0.656)  
 
-# Part 2: Modeling
+Due to co-linearity or statistical irrelevance, we can remove: `TEAM_FIELDING_E`, `TEAM_BASERUN_CS`, `TEAM_BATTING_SO`, `TEAM_BATTING_3B`, and `TEAM_BATTING_HR`.  
+
+# Part 3: Modeling
 
 We started with a naive model that uses all of the data vectors. We got an adjusted $R^2$ value of 31.4%. 
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_BB + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-Then, we removed the least significant variable, TEAM_PITCHING_BB. This yielded a slight increase in our $R^2$ score at 31.5%.
+Then, we removed the least significant variable, `TEAM_PITCHING_BB`. This yielded a slight increase in our $R^2$ score at 31.5%.
 
-
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
@@ -208,17 +218,17 @@ summary(model)
 ```
 
 
-### Checking for non-linearity
+## Checking for non-linearity
 
 Below we use the ```crPlots()``` function to check for non-linearity.
 
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 crPlots(model)
 ```
 
 TEAM_PITCHING_H, TEAM_PITCHING_SO did not pass the check for non-linearity. So, we will transform them and refit the model. We are using a log10 transform because these numbers span many orders of magnitude.
 
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 moneyball_filled$TEAM_PITCHING_H<- log10(moneyball_filled$TEAM_PITCHING_H+0.1)
 moneyball_filled$TEAM_PITCHING_SO<- log10(moneyball_filled$TEAM_PITCHING_SO+0.1)
 
@@ -231,17 +241,17 @@ test_filled$TEAM_PITCHING_SO<- log10(test_filled$TEAM_PITCHING_SO+0.1)
 
 
 ```
-Now we remove TEAM_BATTING_SO because it has a p-value > 0.05.
+Now we remove `TEAM_BATTING_SO` because it has a p-value > 0.05.
 
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-### Eliminating Outliers
+## Eliminating Outliers
 
 Then, we used Cook's distance to identify extreme values, removing them as necessary.
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 cutoff<-4/((nrow(moneyball_filled)-length(model$coefficients)-2))
 plot(model, which = 4, cook.levels = cutoff)
 plot(model, which = 5, cook.levels = cutoff)
@@ -252,14 +262,14 @@ moneyball_filled<-moneyball_filled[-which(rownames(moneyball_filled)
 
 Then, we re-fit the model to the new data, yielding our highest $R^2$ value of 31.57%. 
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-### Checking for Colinearity
+## Checking for Colinearity
 
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 vif(model)
 plot(model)
 ```
