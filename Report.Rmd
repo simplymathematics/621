@@ -5,12 +5,7 @@ date: "14/02/2019"
 output: html_document
 ---
 
-Introduction
--------------
-
-
-Loading necessary package
-
+First, we had to load our dependencies. They are listed below.
 ```{r, echo = FALSE}
 library(dplyr, quietly = TRUE)
 library(tidyr, quietly = TRUE)
