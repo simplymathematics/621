@@ -296,11 +296,10 @@ Using our finished model above, we can predict the number of wins for each team.
 round(predict(model, test_filled),0)
 ```
 
-Additionally, we can use a residual plot to verify our model. However, we can see from our residual plot that our model does not have good heteroscedasticity. Our model consistently over-predicts the wins of above-average teams and consistenly under-predicts the wins for below-average teams. This likely stems from our data handling techniques above that turned our absent data into the mean of their column. A model using more complete data will likely perform much better.
+Additionally, we can use a residual plot to verify our model. We can see that our model's residuals are fairly normal and randomly distributed. They also are centered and zero.
 
-```{r, eval = T, echo = F, comments = F, warning = F, message=F}
-tmp <- lm(model, data = moneyball_filled)
-res <- resid(tmp)
-
-plot(moneyball_filled$TARGET_WINS, res, ylab = "Residuals", xlab = "WINS", main = "WINS")
+```{r, echo = FALSE}
+residuals <- residuals(model)
+plot(residuals)
+summary(residuals)
 ```
