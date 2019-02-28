@@ -1,48 +1,105 @@
 ---
-title: "Data_621_HW1"
+title: "Homework 1"
 author: "Group 2"
-date: "14/02/2019"
-output: html_document
+date: "02/27/2019"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+  pdf_document: default
 ---
 
-First, we had to load our dependencies. They are listed below.
-```{r, echo = FALSE}
-library(dplyr, quietly = TRUE)
-library(tidyr, quietly = TRUE)
-library(ggplot2, quietly = TRUE)
-library(car, quietly = TRUE)
-library(corrplot, quietly = TRUE)
-library(Hmisc, quietly = TRUE)
-library(psych, quietly = TRUE)
-library (MASS, quietly = TRUE)
-library(lmtest, quietly = TRUE)
-library(faraway, quietly = TRUE)
+<style type="text/css">
+body{ /* Normal  */
+      font-size: 16px;
+}
+td {  /* Table  */
+  font-size: 14px;
+}
+h1.title {
+  font-size: 16px;
+  color: #222837;
+}
+h1 { /* Header 1 */
+  font-size: 30px;
+  color: #182e38;
+}
+h2 { /* Header 2 */
+  font-size: 24px;
+  color: #4c63a8;
+}
+h3 { /* Header 3 */
+  font-size: 20px;
+  color: #4c63a8;
+}
+h4.author {
+  font-size: 16px;
+  color: #222837;
+}
+h4.date {
+  font-size: 16px;
+  color: #222837;
+}
+h4 { /* Header 4 */
+  font-size: 18px;
+  color: #98a3c0;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 14px;
+}
+</style>
+
+# Part 1: Overview 
+
+The purpose of this assignment is to explore, analyze and model professional baseball team performance from the years 1871 to 2006. Our objective is to build a multiple linear regression model on the provided data to predict the number of wins for the team.**
+
+## Dependencies 
+
+Replication of our work requires the following dependencies:
+
+```{r, eval = T, echo = T, comments = F, warning = F, message=F}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(car)
+library(corrplot)
+library(Hmisc)
+library(psych)
+library (MASS)
+library(lmtest)
+library(faraway)
+library(knitr)
+library(kableExtra)
 ```
-##  Data Exploration and Data Preparation
 
-### Mean/St dev/ Median
+## Data Preparation
 
-First, we read the training and test data in from the csvs in the repository. 
+We first read the training and test data from the csv files located in our repository. 
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = T, comments = F, warning = F, message=F}
 train_data <- "moneyball-training-data.csv"
 test_data <- "moneyball-evaluation-data.csv"
 moneyball_data <- read.csv(train_data, header=TRUE, stringsAsFactors=FALSE, fileEncoding="latin1")
 test_data <- read.csv(test_data, header = TRUE, stringsAsFactors = FALSE)
 ```
 
-### Missing Variables
+# Part 2: Data Exploration
 
-Because there are so many missing data points, we are replacing each empty data point with the mean of that data column. Simply removing the data with omitted values removed 90% of our data because our dataset is so incomplete. Below is where we find the appropriate means.
+Upon review of the dataset, we found large amounts of missing variables. We choose to replace the empty data points with the mean of that data column. The method was preferable to removing the data with omitted values, because that would have removed 90% of the provided data.  
 
-```{r, echo = FALSE}
+We calculated the appropriate means to compensate for the incomplete data below: 
+
+```{r, eval = T, echo = T, comments = F, warning = F, message=F}
 sapply(moneyball_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
 sapply(test_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
 ```
 
-Next, we removed "index" and "TEAM_BATTING_HBP" columns as "TEAM_BATTING_HBP" has 92% of missing values" and "index" was just a counter.
+We also choose to removed "index" and "TEAM_BATTING_HBP" columns as "TEAM_BATTING_HBP" has 92% of missing values" and "index" was just a counter.
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = T, comments = F, warning = F, message=F}
 moneyball_data<-subset(moneyball_data, select = -c(INDEX))
 moneyball<-subset(moneyball_data, select = -c(TEAM_BATTING_HBP))
 
@@ -50,9 +107,11 @@ test_data <- subset(test_data, select = -c(INDEX))
 test_data <- subset(test_data, select = -c(TEAM_BATTING_HBP))
 ```
 
-Here is where we finally replace the missing data with the appropriate mean data.
+## Summary Statistics 
 
-```{r, echo = FALSE}
+Through these steps, we replaced the missing data with the appropriate mean data.
+
+```{r, eval = T, echo = T, comments = F, warning = F, message=F}
 replace_mean <- function(x){
   x <- as.numeric(as.character(x))
   x[is.na(x)] = mean(x, na.rm=TRUE)
@@ -64,15 +123,19 @@ moneyball_filled <- as.data.frame(moneyball_filled)
 
 test_filled <- apply(test_data, 2, replace_mean)
 test_filled <- as.data.frame(test_data)
-
-
 ```
 
-### Bar Chart/ Box Plot/ Histogram
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
+output <- test_filled %>% summarise_all(funs(mean)) 
+kable(t(output))
+```
 
-Now that we have a 'good' dataset, we can look at some histograms for each data vector.
 
-```{r, echo = FALSE}
+### Histogram
+
+Now that we have a 'good' dataset, we can look at some histograms for each data vector. Our output suggests that most variables are fairly normally distributed and span many orders of magnitude. This tells us that our model will have some kind scaling factor between our data vectors.
+
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 par(mfrow = c(3,5))
 plot(density(moneyball_filled$TARGET_WINS))
 plot(density(moneyball_filled$TEAM_BATTING_H))
@@ -91,77 +154,88 @@ plot(density(moneyball_filled$TEAM_FIELDING_E))
 plot(density(moneyball_filled$TEAM_FIELDING_DP))
 ```
 
-Here we see that most variables are fairly normally distributed and span many orders of magnitude. This tells us that our model will have some kind scaling factor between our data vectors.
+### Target Wins Variable 
 
+To better understand the goal of our model, we examined the targeted wins variable. Below are the plots that show this variable follows a normal, unimodal distribution that is slightly skewed to the left. 
 
-### Target Variable Plot
-
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 plot(moneyball_filled$TARGET_WINS)
 hist(moneyball_filled$TARGET_WINS)
 boxplot(moneyball_filled$TARGET_WINS)
 summary(moneyball_filled$TARGET_WINS)
 ```
 
+## Correlation
 
+We then checked for correlation among our dependent variables, as all variables are numeric we will rely on correlation. Below is a correlation plot that highlights the correlation between various data vectors. Dark blue is a high, positive correlation and dark red is a large negative correlation.
 
-### Correlation
-
-Checking for variable dependencies, as all variables are numeric we will rely on correlation. Below is a correlation plot that highlights the correlation between various data vectors. Dark blue is a high, positive correlation and dark red is a large negative correlation.
-
-```{r, echo = FALSE}
-corr_moneyball<- cor(moneyball_filled)
-round(corr_moneyball, digits =3)
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
+corr_moneyball<- cor(round(moneyball_filled, digits = 3))
 corrplot(corr_moneyball, method = "circle")
 ```
 
-Here we notice several variables have poor correlation with the target variable (p<0.1): TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B. However, others have strong correlation between each others (>0.6): TEAM_PITCHING_HR vs TEAM_BATTING_HR (0.969); TEAM_BATTING_HR VS TEAM_BATTING_SO (0.693), TEAM_BATTING_3B VS TEAM_BATTING_SO (-0.656). Due to co-linearity or statistical irrelevance, we can remove: TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B, TEAM_BATTING_HR
+Here, we notice several variables have poor correlation with the target variable (p<0.1):  
+    - `TEAM_FIELDING_E`  
+    - `TEAM_BASERUN_CS`  
+    - `TEAM_BATTING_SO`  
+    - `TEAM_BATTING_3B`  
 
+However, others have strong correlation between each others (>0.6):   
+    - `TEAM_PITCHING_HR` vs `TEAM_BATTING_HR` (0.969)   
+    - `TEAM_BATTING_HR` vs `TEAM_BATTING_SO` (0.693)   
+    - `TEAM_BATTING_3B` vs `TEAM_BATTING_SO` (-0.656)  
 
-## Modeling
+Due to co-linearity or statistical irrelevance, we can remove: `TEAM_FIELDING_E`, `TEAM_BASERUN_CS`, `TEAM_BATTING_SO`, `TEAM_BATTING_3B`, and `TEAM_BATTING_HR`.  
 
+# Part 3: Modeling
+
+## Model 1 
 
 We started with a naive model that uses all of the data vectors. We got an adjusted $R^2$ value of 31.4%. 
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_BB + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-Then, we removed the least significant variable, TEAM_PITCHING_BB. This yielded a slight increase in our $R^2$ score at 31.5%.
+## Model 2 
 
+Then, we removed the least significant variable, `TEAM_PITCHING_BB`. This yielded a slight increase in our $R^2$ score at 31.5%.
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
+## Model 3
+
 We repeated the above procedure for TEAM_BASERUN_CS, netting us a score of 31.52%. By removing two variables we were able to oh-so-slightly increase our $R^2$ value while reducing the amount of data we have to track and the processing time for tracking it.
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
+## Model 4
+
 By removing TEAM_PITCHING_HR, we increase our $R^2$ value one last time to 31.53%. 
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
+## Evaluate Non-linearity
 
-### Checking for non-linearity
+Below we use the `crPlots()` function to check for non-linearity.
 
-Below we use the ```crPlots()``` function to check for non-linearity.
-
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 crPlots(model)
 ```
 
-TEAM_PITCHING_H, TEAM_PITCHING_SO did not pass the check for non-linearity. So, we will transform them and refit the model. We are using a log10 transform because these numbers span many orders of magnitude.
+`TEAM_PITCHING_H`, `TEAM_PITCHING_SO` did not pass the check for non-linearity. So, we will transform them and refit the model. We are using a log10 transform because these numbers span many orders of magnitude.
 
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 moneyball_filled$TEAM_PITCHING_H<- log10(moneyball_filled$TEAM_PITCHING_H+0.1)
 moneyball_filled$TEAM_PITCHING_SO<- log10(moneyball_filled$TEAM_PITCHING_SO+0.1)
 
@@ -172,20 +246,18 @@ crPlots(model)
 
 test_filled$TEAM_PITCHING_H<- log10(test_filled$TEAM_PITCHING_H+0.1)
 test_filled$TEAM_PITCHING_SO<- log10(test_filled$TEAM_PITCHING_SO+0.1)
-
-
 ```
-Now we remove TEAM_BATTING_SO because it has a p-value > 0.05.
+Now we remove `TEAM_BATTING_SO` because it has a p-value > 0.05.
 
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-### Eliminating Outliers
+## Eliminating Outliers
 
 Then, we used Cook's distance to identify extreme values, removing them as necessary.
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 cutoff<-4/((nrow(moneyball_filled)-length(model$coefficients)-2))
 plot(model, which = 4, cook.levels = cutoff)
 plot(model, which = 5, cook.levels = cutoff)
@@ -196,35 +268,43 @@ moneyball_filled<-moneyball_filled[-which(rownames(moneyball_filled)
 
 Then, we re-fit the model to the new data, yielding our highest $R^2$ value of 31.57%. 
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-### Checking for Colinearity
+## Checking for Colinearity
 
-```{r}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 vif(model)
 plot(model)
 ```
 
-TEAM_FIELDING_E is withing the range 5-10 (suggesting co linearity with other variables), but eliminating TEAM_FIELDING_E does not improve the model. This yields our highest $R^2$ value with 40% of the variance explained by our model.
+## Model 5
 
-```{r}
+`TEAM_FIELDING_E` is withing the range 5-10 (suggesting co linearity with other variables), but eliminating `TEAM_FIELDING_E` does not improve the model. This yields our highest $R^2$ value with 40% of the variance explained by our model.
+
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 model_basic<-lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_data)
 summary(model_basic)
 ```
 
-## Model Evaluation
+# Part 4: Model Evaluation
+
 Using our finished model above, we can predict the number of wins for each team. We rounded to a whole number so that the finished values have some real world analogue. The F-statistics has a p value of basically 0, so we can determine that our model is statistically significant.
+<<<<<<< HEAD
 ```{r, echo = FALSE}
 round(predict(model, test_filled),0)
+=======
+>>>>>>> 506fbdfb757236634f1b5b59d0597e48f9c5289d
 
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
+round(predict(model, test_filled),0)
 ```
 
 Additionally, we can use a residual plot to verify our model. However, we can see from our residual plot that our model does not have good heteroscedasticity. Our model consistently over-predicts the wins of above-average teams and consistenly under-predicts the wins for below-average teams. This likely stems from our data handling techniques above that turned our absent data into the mean of their column. A model using more complete data will likely perform much better.
 
-```{r, echo = FALSE}
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 tmp <- lm(model, data = moneyball_filled)
 res <- resid(tmp)
 plot(moneyball_filled$TARGET_WINS, res, ylab = "Residuals", xlab = "WINS", main = "WINS")
