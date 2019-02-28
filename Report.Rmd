@@ -68,8 +68,7 @@ test_filled <- as.data.frame(test_data)
 
 ```
 
-
-c. Bar Chart/ Box Plot/ Histogram
+### Bar Chart/ Box Plot/ Histogram
 
 Now that we have a 'good' dataset, we can look at some histograms for each data vector.
 
@@ -110,7 +109,7 @@ summary(moneyball_filled$TARGET_WINS)
 
 Checking for variable dependencies, as all variables are numeric we will rely on correleation. Below is a correlation plot that highlights the correlation between various data vectors. Dark blue is a high, postive correlation and dark red is a large negative correlation.
 
-```{r}
+```{r, echo = FALSE}
 corr_moneyball<- cor(moneyball_filled)
 round(corr_moneyball, digits =3)
 corrplot(corr_moneyball, method = "circle")
