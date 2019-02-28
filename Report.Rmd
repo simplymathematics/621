@@ -4,14 +4,57 @@ author: "Group 2"
 date: "02/27/2019"
 output:
   html_document:
-    highlight: monochrome
-    theme: cosmo
     toc: true
     toc_float: true
   pdf_document: default
 ---
 
-**The purpose of this assignment is to explore, analyze and model professional baseball team performance from the years 1871 to 2006. Our objective is to build a multiple linear regression model on the provided data to predict the number of wins for the team.**
+<style type="text/css">
+body{ /* Normal  */
+      font-size: 16px;
+}
+td {  /* Table  */
+  font-size: 14px;
+}
+h1.title {
+  font-size: 16px;
+  color: #222837;
+}
+h1 { /* Header 1 */
+  font-size: 30px;
+  color: #182e38;
+}
+h2 { /* Header 2 */
+  font-size: 24px;
+  color: #4c63a8;
+}
+h3 { /* Header 3 */
+  font-size: 20px;
+  color: #4c63a8;
+}
+h4.author {
+  font-size: 16px;
+  color: #222837;
+}
+h4.date {
+  font-size: 16px;
+  color: #222837;
+}
+h4 { /* Header 4 */
+  font-size: 18px;
+  color: #98a3c0;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 14px;
+}
+</style>
+
+# Assignment Overview 
+
+The purpose of this assignment is to explore, analyze and model professional baseball team performance from the years 1871 to 2006. Our objective is to build a multiple linear regression model on the provided data to predict the number of wins for the team.**
 
 Replication of our work requires the following dependencies:
 
@@ -30,9 +73,11 @@ library(knitr)
 library(kableExtra)
 ```
 
-# Part 1: Data Exploration
+# Part 1: Data Preparation and Exploration
 
-We first read the training and test data in from the csv files located in our repository. 
+## Raw Data Import
+
+We first read the training and test data from the csv files located in our repository. 
 
 ```{r, eval = T, echo = T, comments = F, warning = F, message=F}
 train_data <- "moneyball-training-data.csv"
@@ -41,7 +86,7 @@ moneyball_data <- read.csv(train_data, header=TRUE, stringsAsFactors=FALSE, file
 test_data <- read.csv(test_data, header = TRUE, stringsAsFactors = FALSE)
 ```
 
-Upon review of the dataset, we found large amounts of missing variables.  We choose to replace the empty data points with the mean of that data column. The method was preferable to removing the data with omitted values, because that would have removed 90% of the provided data.  
+Upon review of the dataset, we found large amounts of missing variables. We choose to replace the empty data points with the mean of that data column. The method was preferable to removing the data with omitted values, because that would have removed 90% of the provided data.  
 
 We calculated the appropriate means to compensate for the incomplete data below: 
 
@@ -60,7 +105,7 @@ test_data <- subset(test_data, select = -c(INDEX))
 test_data <- subset(test_data, select = -c(TEAM_BATTING_HBP))
 ```
 
-## 2.2 Summary Statistics 
+## Summary Statistics 
 
 Through these steps, we replaced the missing data with the appropriate mean data.
 
@@ -107,9 +152,11 @@ plot(density(moneyball_filled$TEAM_FIELDING_E))
 plot(density(moneyball_filled$TEAM_FIELDING_DP))
 ```
 
-### Target Variable Plot
+### Target Wins Variable 
 
-```{r, echo = FALSE}
+To better understand the goal of our model, we examined the targeted wins variable. Below are the plots that show this variable follows a normal, unimodal distribution that is slightly skewed to the left. 
+
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
 plot(moneyball_filled$TARGET_WINS)
 hist(moneyball_filled$TARGET_WINS)
 boxplot(moneyball_filled$TARGET_WINS)
@@ -117,22 +164,19 @@ summary(moneyball_filled$TARGET_WINS)
 ```
 
 
+## Correlation
 
-### Correlation
+We then checked for correlation among our dependent variables, as all variables are numeric we will rely on correlation. Below is a correlation plot that highlights the correlation between various data vectors. Dark blue is a high, positive correlation and dark red is a large negative correlation.
 
-Checking for variable dependencies, as all variables are numeric we will rely on correlation. Below is a correlation plot that highlights the correlation between various data vectors. Dark blue is a high, positive correlation and dark red is a large negative correlation.
-
-```{r, echo = FALSE}
-corr_moneyball<- cor(moneyball_filled)
-round(corr_moneyball, digits =3)
+```{r, eval = T, echo = F, comments = F, warning = F, message=F}
+corr_moneyball<- cor(round(moneyball_filled, digits = 3))
 corrplot(corr_moneyball, method = "circle")
 ```
 
-Here we notice several variables have poor correlation with the target variable (p<0.1): TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B. However, others have strong correlation between each others (>0.6): TEAM_PITCHING_HR vs TEAM_BATTING_HR (0.969); TEAM_BATTING_HR VS TEAM_BATTING_SO (0.693), TEAM_BATTING_3B VS TEAM_BATTING_SO (-0.656). Due to co-linearity or statistical irrelevance, we can remove: TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B, TEAM_BATTING_HR
+Here, we notice several variables have poor correlation with the target variable (p<0.1): `TEAM_FIELDING_E`, `TEAM_BASERUN_CS`, `TEAM_BATTING_SO`, `TEAM_BATTING_3B`. However, others have strong correlation between each others (>0.6): `TEAM_PITCHING_HR` vs `TEAM_BATTING_HR` (0.969); `TEAM_BATTING_HR` VS `TEAM_BATTING_SO` (0.693), `TEAM_BATTING_3B` VS `TEAM_BATTING_SO` (-0.656). Due to co-linearity or statistical irrelevance, we can remove: `TEAM_FIELDING_E`, `TEAM_BASERUN_CS`, `TEAM_BATTING_SO`, `TEAM_BATTING_3B`, and `TEAM_BATTING_HR`.
 
 
-## Modeling
-
+# Part 2: Modeling
 
 We started with a naive model that uses all of the data vectors. We got an adjusted $R^2$ value of 31.4%. 
 
