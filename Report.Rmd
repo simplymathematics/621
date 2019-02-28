@@ -222,6 +222,6 @@ summary(model_basic)
 
 ## Model Evaluation
 Using our finished model above, we can predict the number of wins for each team. We rounded to a whole number so that the finished values have some real world analogue.
-```{r}
+```{r, echo = FALSE}
 round(predict(model, test_filled),0)
 ```
