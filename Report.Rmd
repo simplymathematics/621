@@ -40,14 +40,14 @@ test_data <- read.csv(test_data, header = TRUE, stringsAsFactors = FALSE)
 
 Because there are so many missing data points, we are replacing each empty data point with the mean of that data column. Simply removing the data with omitted values removed 90% of our data because our dataset is so incomplete. Below is where we find the appropriate means.
 
-```{r}
+```{r, echo = FALSE}
 sapply(moneyball_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
 sapply(test_data, function(y) sum(length(which(is.na(y)))))/nrow(moneyball_data)*100
 ```
 
 Next, we removed "index" and "TEAM_BATTING_HBP" columns as "TEAM_BATTING_HBP" has 92% of missing values" and "index" was just a counter.
 
-```{r}
+```{r, echo = FALSE}
 moneyball_data<-subset(moneyball_data, select = -c(INDEX))
 moneyball<-subset(moneyball_data, select = -c(TEAM_BATTING_HBP))
 
@@ -57,7 +57,7 @@ test_data <- subset(test_data, select = -c(TEAM_BATTING_HBP))
 
 Here is where we finally replace the missing data with the appropriate mean data.
 
-```{r}
+```{r, echo = FALSE}
 replace_mean <- function(x){
   x <- as.numeric(as.character(x))
   x[is.na(x)] = mean(x, na.rm=TRUE)
@@ -113,7 +113,7 @@ summary(moneyball_filled$TARGET_WINS)
 
 ### Correlation
 
-Checking for variable dependencies, as all variables are numeric we will rely on correleation.
+Checking for variable dependencies, as all variables are numeric we will rely on correleation. Below is a correlation plot that highlights the correlation between various data vectors. Dark blue is a high, postive correlation and dark red is a large negative correlation.
 
 ```{r}
 corr_moneyball<- cor(moneyball_filled)
@@ -121,57 +121,51 @@ round(corr_moneyball, digits =3)
 corrplot(corr_moneyball, method = "circle")
 ```
 
-- poor correlation with target (p<0.1): TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B
-   
-- strong correlation between each others (>0.6): TEAM_PITCHING_HR vs TEAM_BATTING_HR (0.969); TEAM_BATTING_HR VS TEAM_BATTING_SO (0.693), TEAM_BATTING_3B VS TEAM_BATTING_SO (-0.656)
-
-Possible variables to remove: TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B, TEAM_BATTING_HR
+Here we notice several variables have poor correlation with the target variable (p<0.1): TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B. However, others have trong correlation between each others (>0.6): TEAM_PITCHING_HR vs TEAM_BATTING_HR (0.969); TEAM_BATTING_HR VS TEAM_BATTING_SO (0.693), TEAM_BATTING_3B VS TEAM_BATTING_SO (-0.656). Due to colinearity or statistical irrelvance, we can remove: TEAM_FIELDING_E, TEAM_BASERUN_CS, TEAM_BATTING_SO, TEAM_BATTING_3B, TEAM_BATTING_HR
 
 
-3. Modeling
-------------
+## Modeling
 
-Backward elimination method: 
 
-```{r}
+We started with a naive model that uses all of the data vectors. We got an adjusted $R^2$ value of 31.4%. 
+
+```{r, echo = FALSE}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_BB + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-Removing TEAM_PITCHING_BB
+Then, we removed the least significant variable, TEAM_PITCHING_BB. This yieled a slight increase in our $R^2$ score at 31.5%.
 
-```{r}
+
+```{r, echo = FALSE}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB + TEAM_BASERUN_CS + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-Removing TEAM_BASERUN_CS
+We repeated the above procedure for TEAM_BASERUN_CS, netting us a score of 31.52%. By removing two variables we were able to oh-so-slightly increase our $R^2$ value while reducing the amount of data we have to track and the processing time for tracking it.
 
-```{r}
+```{r, echo = FALSE}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_HR + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-Removing TEAM_PITCHING_HR
+By removing TEAM_PITCHING_HR, we increase our $R^2$ value one last time to 31.53%. 
 
-```{r}
+```{r, echo = FALSE}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
 
-Checking for non-linearity
---------------------------
+### Checking for non-linearity
+
+Below we use the ```crPlots()``` function to check for non-linearity.
 
 ```{r}
 crPlots(model)
 ```
 
-TEAM_PITCHING_H, TEAM_PITCHING_SO did not pass the check for non-linerity.
-
-
-Let's transform TEAM_PITCHING_H, TEAM_PITCHING_SO and re-fit the model
-
+TEAM_PITCHING_H, TEAM_PITCHING_SO did not pass the check for non-linerity. So, we will transform them and refit the model. We are using a log10 transform because these numbers span many orders of magnitude.
 
 ```{r}
 moneyball_filled$TEAM_PITCHING_H<- log10(moneyball_filled$TEAM_PITCHING_H+0.1)
@@ -180,18 +174,22 @@ moneyball_filled$TEAM_PITCHING_SO<- log10(moneyball_filled$TEAM_PITCHING_SO+0.1)
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 crPlots(model)
+
+test_filled$TEAM_PITCHING_H<- log10(test_filled$TEAM_PITCHING_H+0.1)
+test_filled$TEAM_PITCHING_SO<- log10(test_filled$TEAM_PITCHING_SO+0.1)
+
+
 ```
-Removing TEAM_BATTING_SO with p-value > 0.05
+Now we remove TEAM_BATTING_SO because it has a p-value > 0.05.
 
 ```{r}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-Eliminating extreme values
---------------------------
-(using Cook's distance plot as 4/(n-k-1), identify D values > cutoff)
+### Eliminating Outliers
 
+Then, we used Cook's distance to identify extreme values, removing them as neccessary.
 ```{r}
 cutoff<-4/((nrow(moneyball_filled)-length(model$coefficients)-2))
 plot(model, which = 4, cook.levels = cutoff)
@@ -201,33 +199,21 @@ moneyball_filled<-moneyball_filled[-which(rownames(moneyball_filled)
 ```
 
 
-refit the model:
+Then, we re-fit the model to the new data, yielding our highest $R^2$ value of 31.57%. 
 
-```{r}
+```{r, echo = FALSE}
 model<- lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_filled)
 summary(model)
 ```
 
-Check and eliminate further extrimes if any
-
-```{r}
-cutoff<-4/((nrow(moneyball_filled)-length(model$coefficients)-2))
-plot(model, which = 4, cook.levels = cutoff)
-plot(model, which = 5, cook.levels = cutoff)
-
-```
-
-
-
-Checking for multicolliniarity
-------
+### Checking for Colinearity
 
 ```{r}
 vif(model)
 plot(model)
 ```
 
-TEAM_FIELDING_E is withing the range 5-10, but eliminating TEAM_FIELDING_E does not improve the model.
+TEAM_FIELDING_E is withing the range 5-10 (suggesting colinearity with other variables), but eliminating TEAM_FIELDING_E does not improve the model.
 
 ```{r}
 model_basic<-lm(TARGET_WINS ~ TEAM_BATTING_H + TEAM_BATTING_2B + TEAM_BATTING_3B + TEAM_BATTING_HR + TEAM_BATTING_BB + TEAM_BATTING_SO + TEAM_BASERUN_SB  + TEAM_PITCHING_H + TEAM_PITCHING_SO + TEAM_FIELDING_E + TEAM_FIELDING_DP, moneyball_data)
