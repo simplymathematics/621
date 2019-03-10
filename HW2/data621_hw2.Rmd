@@ -1,0 +1,175 @@
+---
+title: "Data621_hw2"
+author: "Olga Shiligin"
+date: "04/03/2019"
+output: html_document
+---
+
+
+
+```{r}
+# install.packages(pkgs = "pROC", dependencies = TRUE)
+library(caret)
+library(pROC)
+```
+
+Q1 
+
+```{r}
+data<-read.csv('https://raw.githubusercontent.com/olgashiligin/data621/master/HW2/data.csv')
+head(data)
+str(data)
+data$class<- as.factor(data$class)
+data$scored.class<- as.factor(data$scored.class)
+```
+
+Q2
+
+```{r}
+# rows - predictions
+# columns - actual
+table(data$scored.class, data$class)
+```
+
+
+Q3
+
+```{r}
+accuracy <- function(df) {
+mtx = table(df$class,df$scored.class)
+head(mtx)
+TN=mtx[1,1]
+FP=mtx[1,2]
+FN=mtx[2,1]
+TP=mtx[2,2]
+
+return((TP+TN)/(TP+FP+TN+FN))
+  
+}
+```
+
+
+Q4
+
+```{r}
+error <- function(df) {
+mtx = table(df$class,df$scored.class)
+TN=mtx[1,1]
+FP=mtx[1,2]
+FN=mtx[2,1]
+TP=mtx[2,2]
+  
+return((FP+FN)/(TP+FP+TN+FN))
+  
+}
+```
+
+Verification: accuracy + error rate  = 1
+
+```{r}
+0.8066298 + 0.1933702
+```
+
+Q5
+
+```{r}
+precision <- function(df) {
+mtx = table(df$class,df$scored.class)
+FP=mtx[1,2]
+TP=mtx[2,2]
+
+  
+return((TP)/(TP+FP))
+  
+}
+
+```
+
+Q6
+
+```{r}
+sensitivity <- function(df) {
+mtx = table(df$class,df$scored.class)
+TP=mtx[2,2]
+FN=mtx[2,1]
+  
+return((TP)/(TP+FN))
+  
+}
+
+```
+
+Q7
+
+```{r}
+specificity <- function(df) {
+mtx = table(df$class,df$scored.class)
+TN=mtx[1,1]
+FP=mtx[1,2]
+FN=mtx[2,1]
+TP=mtx[2,2]
+
+return((TN)/(TN+FP))
+  
+}
+```
+
+
+Q8
+
+```{r}
+f1 <- function(df) {
+mtx = table(df$class,df$scored.class)
+TN=mtx[1,1]
+FP=mtx[1,2]
+FN=mtx[2,1]
+TP=mtx[2,2]
+  
+return (2*TP/(2*TP+FN+FP))
+  
+}
+```
+
+Q9
+
+???
+
+
+Q10
+
+
+
+
+Q11
+
+```{r}
+accuracy(data)
+error(data)
+precision(data)
+sensitivity(data)
+specificity(data)
+f1(data)
+```
+
+
+
+Q12
+
+```{r}
+cf<-confusionMatrix(data$scored.class, data$class, positive = "1")
+cf
+```
+
+
+Q13
+
+
+```{r}
+roc(class ~ scored.probability, data, smooth=FALSE, plot = TRUE, print.auc=TRUE,  col="red")
+```
+
+
+
+
+
+
