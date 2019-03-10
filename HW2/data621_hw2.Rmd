@@ -1,11 +1,13 @@
 ---
-title: "Data621_hw2"
-author: "Olga Shiligin"
+title: "Data621 HW2"
+author: "Team 2"
 date: "04/03/2019"
 output: html_document
 ---
 
+## Dependencies
 
+Here we installed our dependencies.
 
 ```{r}
 # install.packages(pkgs = "pROC", dependencies = TRUE)
@@ -13,18 +15,19 @@ library(caret)
 library(pROC)
 ```
 
-Q1 
+## Pre-processing
 
+Here, we read the data, and converted the ```scored.class``` vector to a factor.
 ```{r}
-data<-read.csv('https://raw.githubusercontent.com/olgashiligin/data621/master/HW2/data.csv')
-head(data)
-str(data)
+data<-read.csv('data.csv')
 data$class<- as.factor(data$class)
 data$scored.class<- as.factor(data$scored.class)
+
 ```
 
-Q2
+## Q2
 
+Next, we formed a confusion matrix. A 0 represents measured or expected falsehood where a 1 represents an expected/measured truth. The confusion matrix puts the measured value on x-axis and the actual value on the y-axis. In that way, we can see that the major diagonal contains most of our data. That is, the model generally classifies things correctly. There are, however, 35 classifieds data points.
 ```{r}
 # rows - predictions
 # columns - actual
@@ -32,7 +35,9 @@ table(data$scored.class, data$class)
 ```
 
 
-Q3
+## Q3
+
+Below is our function for calculating accuracy from a confusion matrix. This is a measure of the number of correct classifications, divided by the total number of classifications.
 
 ```{r}
 accuracy <- function(df) {
@@ -49,8 +54,9 @@ return((TP+TN)/(TP+FP+TN+FN))
 ```
 
 
-Q4
+## Q4
 
+Here, is the error rate function. It is a measure of incorrect classifications divided by the total.
 ```{r}
 error <- function(df) {
 mtx = table(df$class,df$scored.class)
@@ -64,13 +70,15 @@ return((FP+FN)/(TP+FP+TN+FN))
 }
 ```
 
-Verification: accuracy + error rate  = 1
+As expected, the accuracy and error rates add up to 1.
 
 ```{r}
-0.8066298 + 0.1933702
+accuracy(data) + error(data)
 ```
 
-Q5
+## Q5
+
+Precision is a measure of how many detected positives were correctly classified.
 
 ```{r}
 precision <- function(df) {
@@ -85,7 +93,9 @@ return((TP)/(TP+FP))
 
 ```
 
-Q6
+## Q6
+
+Sensitivity measures the number of true positive classifications divided by the number of positives in the population.
 
 ```{r}
 sensitivity <- function(df) {
@@ -99,7 +109,9 @@ return((TP)/(TP+FN))
 
 ```
 
-Q7
+## Q7
+
+Specificity is the negative e## Quivalent of the sensitivity in that it measures number of correctly classified negatives in relation to the total number of negatives in the classified set.
 
 ```{r}
 specificity <- function(df) {
@@ -115,7 +127,15 @@ return((TN)/(TN+FP))
 ```
 
 
-Q8
+## Q8
+
+F1 score is a hybrid score that attempts to weigh the recall(1/specificity) and precision
+in one metric using the harmonic average. Simply put the F1 score is 
+$$
+
+F_1 = \frac{(\text{recall}^{-1} + \text{precision}^{-1})}{2}^{-1}
+
+$$
 
 ```{r}
 f1 <- function(df) {
@@ -130,40 +150,53 @@ return (2*TP/(2*TP+FN+FP))
 }
 ```
 
-Q9
+## Q9
 
-???
+$$
+F_1 = 2 \frac{\text{Precision} \cdot \text{Sensititivity}}{\text{Sensitivity} + \text{Precision}}
+$$
+Since precision and sensitivity can only be on the interval $[0,1]$ the denominator will always be at least as large as the numerator. That is to say that
+$$ a+b \ge## Q a*b $$ when $a$, $b$ are between $[0,1]$. That means our f1 score will be at most 1. We can verify that with a simulation in R. 
+```{r}
+a <- runif(10000,0,1)
+b <- runif(10000,0,1)
+f1 <- (2*a*b/(a+b))
+max(f1)
+
+```
 
 
-Q10
+## Q10
 
 
 
 
-Q11
-
+## Q11
+Here we apply each of our functions to the provided data
 ```{r}
 accuracy(data)
-error(data)
-precision(data)
 sensitivity(data)
 specificity(data)
+
+error(data)
+precision(data)
+
 f1(data)
 ```
 
 
 
-Q12
-
+## Q12
+We can verify our calculations by using the ```caret``` function.
 ```{r}
 cf<-confusionMatrix(data$scored.class, data$class, positive = "1")
 cf
 ```
 
 
-Q13
+## Q13
 
-
+Likewise, the pROC package can be used to verify our results from the ROC curve.
 ```{r}
 roc(class ~ scored.probability, data, smooth=FALSE, plot = TRUE, print.auc=TRUE,  col="red")
 ```
