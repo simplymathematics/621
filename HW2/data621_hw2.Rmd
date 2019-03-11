@@ -90,9 +90,14 @@ return((TP+TN)/(TP+FP+TN+FN))
 ```
 
 
-## Q4
+# Step 4
 
-Here, is the error rate function. It is a measure of incorrect classifications divided by the total.
+Step 4 requires us to write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the classification error rate of the predictions. We expect both our functions for accuracy and an error rate to return a sum of one. 
+
+Below is the error rate function, which measures the incorrect classifications divided by the total.
+
+$${Classification Error Rate} = \frac{FP+FN}{TP+FP+TN+FN}$$ 
+
 ```{r}
 error <- function(df) {
 mtx = table(df$class,df$scored.class)

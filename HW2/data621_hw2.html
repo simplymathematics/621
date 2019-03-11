@@ -263,7 +263,7 @@ data$scored.class&lt;- as.factor(data$scored.class)</code></pre>
 <h1>Step 3</h1>
 <p>Step 3 requires us to write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the accuracy of the predictions.</p>
 <p>The function we created calculates accuracy from the confusion matrix for the <code>class</code> and <code>scored.class</code> variables. It measures the number of correct classifications and divides that sum by the total number of classifications.</p>
-<p><span class="math display">\[{Accuracy} = TP+TN\frac{TP+TN}\]</span></p>
+<p><span class="math display">\[{Accuracy} = \frac{TP+TN}{TP+FP+TN+FN}\]</span></p>
 <pre class="r"><code>accuracy &lt;- function(df) {
 mtx = table(df$class,df$scored.class)
 head(mtx)
@@ -273,11 +273,13 @@ FN=mtx[2,1]
 TP=mtx[2,2]
 
 return((TP+TN)/(TP+FP+TN+FN))
-  
 }</code></pre>
-<div id="q4" class="section level2">
-<h2>Q4</h2>
-<p>Here, is the error rate function. It is a measure of incorrect classifications divided by the total.</p>
+</div>
+<div id="step-4" class="section level1">
+<h1>Step 4</h1>
+<p>Step 4 requires us to write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the classification error rate of the predictions. We expect both our functions for accuracy and an error rate to return a sum of one.</p>
+<p>Below is the error rate function, which measures the incorrect classifications divided by the total.</p>
+<p><span class="math display">\[{Classification Error Rate} = \frac{FP+FN}{TP+FP+TN+FN}\]</span></p>
 <pre class="r"><code>error &lt;- function(df) {
 mtx = table(df$class,df$scored.class)
 TN=mtx[1,1]
@@ -291,7 +293,6 @@ return((FP+FN)/(TP+FP+TN+FN))
 <p>As expected, the accuracy and error rates add up to 1.</p>
 <pre class="r"><code>accuracy(data) + error(data)</code></pre>
 <pre><code>## [1] 1</code></pre>
-</div>
 <div id="q5" class="section level2">
 <h2>Q5</h2>
 <p>Precision is a measure of how many detected positives were correctly classified.</p>
@@ -358,7 +359,7 @@ F_1 = 2 \frac{\text{Precision} \cdot \text{Sensititivity}}{\text{Sensitivity} + 
 b &lt;- runif(10000,0,1)
 f.1 &lt;- (2*a*b/(a+b))
 max(f.1)</code></pre>
-<pre><code>## [1] 0.9916023</code></pre>
+<pre><code>## [1] 0.9929187</code></pre>
 </div>
 <div id="q10" class="section level2">
 <h2>Q10</h2>
