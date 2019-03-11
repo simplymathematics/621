@@ -2,36 +2,68 @@
 title: "Data621 HW2"
 author: "Team 2"
 date: "04/03/2019"
-output: html_document
+output: 
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
+    pdf_document: default
 ---
+
+# Overview
+
+Task: Upon following the instructions below, use your created R functions and the other packages to generate the classification metrics for the provided data set. A write-up of your solutions submitted in PDF format. 
+
+## Instructions 
+
+In this homework assignment, you will work through various classification metrics. You will be asked to create functions in R to carry out the various calculations. You will also investigate some functions in packages that will let you obtain the equivalent results. Finally, you will create graphical output that also can be used to evaluate the output of classification models, such as binary logistic regression. 
 
 ## Dependencies
 
-Here we installed our dependencies.
+Replication of our work requires the following dependencies: 
 
-```{r}
-# install.packages(pkgs = "pROC", dependencies = TRUE)
-library(caret)
-library(pROC)
+```{r, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
+require(caret)
+require(pROC)
 ```
 
-## Pre-processing
+```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
+# Requirements for formatting and augmenting default settings for chunks. 
+require(knitr)
+require(kableExtra)
+require(default)
 
-Here, we read the data, and converted the ```scored.class``` vector to a factor.
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+default(kable_styling)  <- list(bootstrap_options = c("basic"), 
+                                position = "center", 
+                                full_width = TRUE,
+                                font_size = NULL)
+```
+
+# Step 1
+
+Step 1 requires us to download the classification output dataset file. We accomplished this by reading the data and converting the `scored.class` vector to a factor.
+
 ```{r}
 data<-read.csv('data.csv')
 data$class<- as.factor(data$class)
 data$scored.class<- as.factor(data$scored.class)
-
 ```
 
-## Q2
+# Step 2
 
-Next, we formed a confusion matrix. A 0 represents measured or expected falsehood where a 1 represents an expected/measured truth. The confusion matrix puts the measured value on x-axis and the actual value on the y-axis. In that way, we can see that the major diagonal contains most of our data. That is, the model generally classifies things correctly. There are, however, 35 classifieds data points.
+Step 2 requires us to use the `table()` function to get the raw confusion matrix for the scored dataset. The provided data set has three key columns we will use: ???
+    - `class`: the actual class for the observation ???
+    - `scored.class`: the predicted class for the observation (based on a threshold of 0.5) ???
+    - `scored.probability`: the predicted probability of success for the observation 
+
+The confusion matrix puts the measured value on x-axis and the actual value on the y-axis. The rows in the table below represent the predictions from the `scored.class` column, whereas the columns depict the actual values from the `class` variable.  
+
+In this matrix, $0$ represents measured or expected falsehood where as $1$ represents an expected/measured truth. We can see from the results that the major diagonal contains most of our data. That is, the model generally classifies things correctly. There are, however, 35 classifieds data points.
+
 ```{r}
-# rows - predictions
-# columns - actual
-table(data$scored.class, data$class)
+kable(table(data$scored.class, data$class))
 ```
 
 
