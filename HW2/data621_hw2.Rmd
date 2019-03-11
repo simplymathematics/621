@@ -23,6 +23,7 @@ In this homework assignment, you will work through various classification metric
 Replication of our work requires the following dependencies: 
 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
+# install.packages(pkgs = "pROC", dependencies = TRUE)
 require(caret)
 require(pROC)
 ```
@@ -198,8 +199,8 @@ Here it is easy to see that even if we have a large value for both precision and
 ```{r}
 a <- runif(10000,0,1)
 b <- runif(10000,0,1)
-f1 <- (2*a*b/(a+b))
-max(f1)
+f.1 <- (2*a*b/(a+b))
+max(f.1)
 
 ```
 
