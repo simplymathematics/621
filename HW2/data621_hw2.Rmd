@@ -156,7 +156,13 @@ $$
 F_1 = 2 \frac{\text{Precision} \cdot \text{Sensititivity}}{\text{Sensitivity} + \text{Precision}}
 $$
 Since precision and sensitivity can only be on the interval $[0,1]$ the denominator will always be at least as large as the numerator. That is to say that
-$$ a+b \ge## Q a*b $$ when $a$, $b$ are between $[0,1]$. That means our f1 score will be at most 1. We can verify that with a simulation in R. 
+$$ a+b \geq a*b $$ when $a$, $b$ are between $[0,1]$. That means our fraction will be at most 1. However, we must also consider the 2. For that we look at the harmonic form below.
+$$
+
+F_1 = \frac{(\text{recall}^{-1} + \text{precision}^{-1})}{2}^{-1}
+
+$$
+Here it is easy to see that even if we have a large value for both precision and recall (1), the numerator can be at most 2, giving us a maximum score of 1. We can verify that with a simulation of 10000 pairs in R. 
 ```{r}
 a <- runif(10000,0,1)
 b <- runif(10000,0,1)
@@ -187,7 +193,7 @@ f1(data)
 
 
 ## Q12
-We can verify our calculations by using the ```caret``` function.
+We can verify our calculations by using the ```caret``` package.
 ```{r}
 cf<-confusionMatrix(data$scored.class, data$class, positive = "1")
 cf
