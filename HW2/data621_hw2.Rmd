@@ -23,7 +23,6 @@ In this homework assignment, you will work through various classification metric
 Replication of our work requires the following dependencies: 
 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
-# install.packages(pkgs = "pROC", dependencies = TRUE)
 require(caret)
 require(pROC)
 ```
@@ -64,13 +63,18 @@ The confusion matrix puts the measured value on x-axis and the actual value on t
 In this matrix, $0$ represents measured or expected falsehood where as $1$ represents an expected/measured truth. We can see from the results that the major diagonal contains most of our data. That is, the model generally classifies things correctly. There are, however, 35 classifieds data points.
 
 ```{r}
-kable(table(data$scored.class, data$class))
+table(data$scored.class, data$class)
 ```
 
 
-## Q3
+# Step 3
 
-Below is our function for calculating accuracy from a confusion matrix. This is a measure of the number of correct classifications, divided by the total number of classifications.
+Step 3 requires us to write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the accuracy of the predictions. 
+
+The function we created calculates accuracy from the confusion matrix for the `class` and `scored.class` variables. It measures the number of correct classifications and divides that sum by the total number of classifications.
+
+$${Accuracy} = \frac{TP+TN}{TP+FP+TN+FN}$$ 
+
 
 ```{r}
 accuracy <- function(df) {
@@ -82,7 +86,6 @@ FN=mtx[2,1]
 TP=mtx[2,2]
 
 return((TP+TN)/(TP+FP+TN+FN))
-  
 }
 ```
 
