@@ -121,7 +121,7 @@ Step 5 requires us to create a function that takes the data set as a dataframe, 
 
 The precisions function below measures how many detected positives were correctly classified.
 
-$${Sensitivity} = \frac{TP}{TP+FP}$$
+$${Precision} = \frac{TP}{TP+FP}$$
 
 ```{r}
 precision <- function(df) {
@@ -137,9 +137,11 @@ return((TP)/(TP+FP))
 
 # Step 6
 
-This function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the sensitivity of the predictions. Sensitivity is also known as recall. 
+This function takes the data set as a dataframe, with actual and predicted classifications identified, and returns the sensitivity of the predictions. Sensitivity is also known as recall. 
 
 Sensitivity measures the number of true positive classifications divided by the number of positives in the population.
+
+$${Sensitivity} = \frac{TP}{TP+FN}$$
 
 ```{r}
 sensitivity <- function(df) {
