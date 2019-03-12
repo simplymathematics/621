@@ -137,7 +137,7 @@ return((TP)/(TP+FP))
 
 # Step 6
 
-This function takes the data set as a dataframe, with actual and predicted classifications identified, and returns the sensitivity of the predictions. Sensitivity is also known as recall. 
+Step 6 requires us to create a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the sensitivity of the predictions. Sensitivity is also known as recall. 
 
 Sensitivity measures the number of true positive classifications divided by the number of positives in the population.
 
@@ -155,9 +155,11 @@ return((TP)/(TP+FN))
 
 ```
 
-## Q7
+# Step 7
 
-Specificity is the negative e## Quivalent of the sensitivity in that it measures number of correctly classified negatives in relation to the total number of negatives in the classified set.
+Step 7 requires us to create a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the specificity of the predictions. 
+
+Specificity is the negative equivalent of the sensitivity. This value measures number of correctly classified negatives in relation to the total number of negatives in the classified set.
 
 ```{r}
 specificity <- function(df) {
@@ -173,15 +175,16 @@ return((TN)/(TN+FP))
 ```
 
 
-## Q8
+# Step 8 
+
+Step 8 requires us to create a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the $F_1$ score of the predictions. We know that the $F_1$ score is  calculated as follows: 
+
+$$F_1 = \frac{2 * \text{precision} * \text{sensitivity}}{\text{precision}+\text{sensitivity}}$$
 
 F1 score is a hybrid score that attempts to weigh the recall(1/specificity) and precision
-in one metric using the harmonic average. Simply put the F1 score is 
-$$
+in one metric using the harmonic average. Simply put the F1 score is:
 
-F_1 = \frac{(\text{recall}^{-1} + \text{precision}^{-1})}{2}^{-1}
-
-$$
+$$F_1 = \frac{(\text{recall}^{-1} + \text{precision}^{-1})}{2}^{-1}$$
 
 ```{r}
 f1 <- function(df) {
@@ -196,29 +199,29 @@ return (2*TP/(2*TP+FN+FP))
 }
 ```
 
-## Q9
+# Step 9
 
-$$
-F_1 = 2 \frac{\text{Precision} \cdot \text{Sensititivity}}{\text{Sensitivity} + \text{Precision}}
-$$
-Since precision and sensitivity can only be on the interval $[0,1]$ the denominator will always be at least as large as the numerator. That is to say that
-$$ a+b \geq a*b $$ when $a$, $b$ are between $[0,1]$. That means our fraction will be at most 1. However, we must also consider the 2. For that we look at the harmonic form below.
-$$
+Step 9 asks us to evaluate the bounds on the F1 score and show that the F1 score will always be between 0 and 1. ???.) 
+Since precision and sensitivity can only be on the interval $[0,1]$ the denominator will always be at least as large as the numerator. That is to say that $a+b \geq a*b $ when $a$, $b$ are between $[0,1]$. 
 
-F_1 = \frac{(\text{recall}^{-1} + \text{precision}^{-1})}{2}^{-1}
+That means our fraction will be at most 1. However, we must also consider the 2. For that we look at the harmonic form referenced in Step 8 .
 
-$$
 Here it is easy to see that even if we have a large value for both precision and recall (1), the numerator can be at most 2, giving us a maximum score of 1. We can verify that with a simulation of 10000 pairs in R. 
+
 ```{r}
 a <- runif(10000,0,1)
 b <- runif(10000,0,1)
 f.1 <- (2*a*b/(a+b))
 max(f.1)
-
 ```
 
 
-## Q10
+# Step 10
+
+Step 10 requires us to create a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). 
+
+The function below returns the following requirements: a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Per instructions, we used a sequence of thresholds ranging from 0 to 1 at 0.01 intervals to complete this step. 
+
 
 ```{r}
 
