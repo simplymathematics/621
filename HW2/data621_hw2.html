@@ -250,7 +250,14 @@ data$scored.class&lt;- as.factor(data$scored.class)</code></pre>
 </div>
 <div id="step-2" class="section level1">
 <h1>Step 2</h1>
-<p>Step 2 requires us to use the <code>table()</code> function to get the raw confusion matrix for the scored dataset. The provided data set has three key columns we will use: ??? - <code>class</code>: the actual class for the observation ??? - <code>scored.class</code>: the predicted class for the observation (based on a threshold of 0.5) ??? - <code>scored.probability</code>: the predicted probability of success for the observation</p>
+<p>Step 2 requires us to use the <code>table()</code> function to get the raw confusion matrix for the scored dataset. The provided data set has three key columns we will use:<br />
+- <code>class</code>: the actual class for the observation<br />
+- <code>scored.class</code>: the predicted class for the observation (based on a threshold of 0.5)<br />
+- <code>scored.probability</code>: the predicted probability of success for the observation</p>
+<p>Bullet list:</p>
+<ul>
+<li>apples</li>
+</ul>
 <p>The confusion matrix puts the measured value on x-axis and the actual value on the y-axis. The rows in the table below represent the predictions from the <code>scored.class</code> column, whereas the columns depict the actual values from the <code>class</code> variable.</p>
 <p>In this matrix, <span class="math inline">\(0\)</span> represents measured or expected falsehood where as <span class="math inline">\(1\)</span> represents an expected/measured truth. We can see from the results that the major diagonal contains most of our data. That is, the model generally classifies things correctly. There are, however, 35 classifieds data points.</p>
 <pre class="r"><code>table(data$scored.class, data$class)</code></pre>
@@ -359,7 +366,7 @@ F_1 = 2 \frac{\text{Precision} \cdot \text{Sensititivity}}{\text{Sensitivity} + 
 b &lt;- runif(10000,0,1)
 f.1 &lt;- (2*a*b/(a+b))
 max(f.1)</code></pre>
-<pre><code>## [1] 0.9929187</code></pre>
+<pre><code>## [1] 0.9967736</code></pre>
 </div>
 <div id="q10" class="section level2">
 <h2>Q10</h2>
