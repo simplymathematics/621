@@ -1,0 +1,89 @@
+---
+title: "HW 3"
+author: "simplymathematics"
+date: "March 11, 2019"
+output: pdf_document
+---
+# Data 621 HW 3
+
+## Dependencies
+```{r, echo = FALSE}
+library(ggplot2)
+#install.packages('corrplot')
+```
+For this project, we used Rstudio, ggplot2, and corrplot. First we read the data as a csv then performed some simple statistical calculations so that we could explore the data. Below we can see the data as it was read from the csv.
+
+## Data Exploration
+
+```{r, echo = FALSE}
+training <- as.data.frame(read.csv("crime-training-data_modified.csv"))
+test <- as.data.frame(read.csv("crime-evaluation-data_modified.csv"))
+head(training)
+```
+We then calculated the mean and standard deviation for each data vector. Below is the result of those calculations.
+```{r, echo = FALSE}
+means <- sapply(training, mean)
+sds   <- sapply(training, sd)
+explore <- as.data.frame(cbind( means, sds))
+explore
+```
+Below is a bar chart that illutrates the average and standard deviation for each of our data vectors. As we can see, the ```tax``` vector is a totally different magnitude than the rest. Models involving this vector will benefit from normalization or scaling.
+```{r}
+ggplot(explore, aes(x = row.names(explore), y = means))+ 
+  geom_bar(stat = 'identity') + 
+  labs(title = "Means of Various Features") + 
+  xlab("Data Features") + 
+  ylab("Mean of Data") +
+  theme(panel.background = element_blank()) + 
+  geom_errorbar(aes(ymin = means - sds, ymax = means + sds))
+```
+We can see our correlation matrix below. A dark blue circle represents a strong positive relationship and a dark red circle represents a strong negative relationship between two variables. We can see that indus, nox, target, and dis have the most colinearity. Likewise, these vectors are the best predictors for the target value. Note that this plot only includes rows tha have data in each column.L
+
+```{r, echo = FALSE}
+results <- cor(training, method = 'pearson', use = 'complete.obs')
+corrplot::corrplot(results, method = 'circle')
+```
+
+We can see that including rows without all of the data does not significantly effect the results.
+
+```{r, echo= FALSE}
+results <- cor(training, method = 'pearson')
+corrplot::corrplot(results, method = 'circle')
+```
+we can see how many ```NAs``` are in each column to see if we need to impute anything.
+
+```{r, echo = FALSE}
+apply(training, 2, function(x) length(!is.na(x)))
+```
+As we can see, each data vector has the same number of entries, 466. Imputation will not be necessary. Finally, we can use a randomforest method to verify our assumptions from the correlation plot.
+```{r, echo = FALSE}
+training2 <- training
+training2$target <- NULL
+target <- training$target
+
+fit <- randomForest::randomForest(training2, target, importance = TRUE, ntree = 1000)
+
+randomForest::varImpPlot(fit)
+```
+We verified our assumptions above using 1000 random forests. The ```nox```, ```rad```, ```indus```, and ```tax``` have the most effect. While ```dis``` is strongly colinear, it has less effect on the target (likely due to it encoding information stored redundantly in another vector). 
+## Data Preparation
+- [x]  Fix missing Values (None!)
+- [ ] Create Flags for missing variable
+- [ ] Bin Data
+- [ ] Transforms (BoxCox, etc)
+- [ ]  Combine Variables ?
+
+## Build Models
+
+- [ ] 3 binary logistic models
+- [ ] forward, stepwise, random forest, etc
+- [ ] Inferences
+- [ ] Coefficients
+
+## Select Models
+
+- [ ] Use Log Likelihood, AIC, ROC curve,
+- [ ] Evaluate Training Set
+- [ ] Accuracy, Error, Precision, Sensitivity, Specificity, F1 score, AUC, conf matrix (hint: use assignment 2, and check out[this link](https://stackoverflow.com/questions/13548266/define-all-functions-in-one-r-file-call-them-from-another-r-file-how-if-pos) )
+- [ ] Make predictions with test set and interpret
+
