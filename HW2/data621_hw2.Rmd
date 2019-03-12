@@ -20,7 +20,7 @@ In this homework assignment, you will work through various classification metric
 
 ## Dependencies
 
-Replication of our work requires the following dependencies: 
+This assignment requires the following dependencies to complete Steps 12 and 13: 
 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
 require(caret)
@@ -41,7 +41,9 @@ default(kable_styling)  <- list(bootstrap_options = c("basic"),
                                 font_size = NULL)
 ```
 
-# Step 1
+# Steps
+
+## Step 1
 
 Step 1 requires us to download the classification output dataset file. We accomplished this by reading the data.
 
@@ -49,7 +51,7 @@ Step 1 requires us to download the classification output dataset file. We accomp
 data<-read.csv('data.csv')
 ```
 
-# Step 2
+## Step 2
 
 Step 2 requires us to use the `table()` function to get the raw confusion matrix for the scored dataset. The provided data set has three key columns we will use:  
    * `class`: the actual class for the observation  
@@ -65,13 +67,13 @@ table(data$scored.class, data$class)
 ```
 
 
-# Step 3
+## Step 3
 
 Step 3 requires us to write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the accuracy of the predictions. 
 
 The function we created calculates accuracy from the confusion matrix for the `class` and `scored.class` variables. It measures the number of correct classifications and divides that sum by the total number of classifications.
 
-$${Accuracy} = \frac{TP+TN}{TP+FP+TN+FN}$$ 
+$$\text{Accuracy} = \frac{TP+TN}{TP+FP+TN+FN}$$ 
 
 
 ```{r}
@@ -88,13 +90,13 @@ return((TP+TN)/(TP+FP+TN+FN))
 ```
 
 
-# Step 4
+## Step 4
 
 Step 4 requires us to write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the classification error rate of the predictions. We expect both our functions for accuracy and an error rate to return a sum of one. 
 
 Below is the error rate function, which measures the incorrect classifications divided by the total.
 
-$${Classification Error Rate} = \frac{FP+FN}{TP+FP+TN+FN}$$ 
+$$\text{Classification Error Rate} = \frac{FP+FN}{TP+FP+TN+FN}$$ 
 
 ```{r}
 error <- function(df) {
@@ -115,13 +117,13 @@ As expected, the accuracy and error rates add up to 1.
 accuracy(data) + error(data)
 ```
 
-# Step 5
+## Step 5
 
 Step 5 requires us to create a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the precision of the predictions. 
 
 The precisions function below measures how many detected positives were correctly classified.
 
-$${Precision} = \frac{TP}{TP+FP}$$
+$$\text{Precision} = \frac{TP}{TP+FP}$$
 
 ```{r}
 precision <- function(df) {
@@ -135,13 +137,13 @@ return((TP)/(TP+FP))
 }
 ```
 
-# Step 6
+## Step 6
 
 Step 6 requires us to create a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the sensitivity of the predictions. Sensitivity is also known as recall. 
 
 Sensitivity measures the number of true positive classifications divided by the number of positives in the population.
 
-$${Sensitivity} = \frac{TP}{TP+FN}$$
+$$\text{Sensitivity} = \frac{TP}{TP+FN}$$
 
 ```{r}
 sensitivity <- function(df) {
@@ -155,7 +157,7 @@ return((TP)/(TP+FN))
 
 ```
 
-# Step 7
+## Step 7
 
 Step 7 requires us to create a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the specificity of the predictions. 
 
@@ -175,13 +177,13 @@ return((TN)/(TN+FP))
 ```
 
 
-# Step 8 
+## Step 8 
 
 Step 8 requires us to create a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the $F_1$ score of the predictions. We know that the $F_1$ score is  calculated as follows: 
 
 $$F_1 = \frac{2 * \text{precision} * \text{sensitivity}}{\text{precision}+\text{sensitivity}}$$
 
-F1 score is a hybrid score that attempts to weigh the recall(1/specificity) and precision
+$F_1$ score is a hybrid score that attempts to weigh the recall(1/specificity) and precision
 in one metric using the harmonic average. Simply put the F1 score is:
 
 $$F_1 = \frac{(\text{recall}^{-1} + \text{precision}^{-1})}{2}^{-1}$$
@@ -199,9 +201,10 @@ return (2*TP/(2*TP+FN+FP))
 }
 ```
 
-# Step 9
+## Step 9
 
-Step 9 asks us to evaluate the bounds on the F1 score and show that the F1 score will always be between 0 and 1. ???.) 
+Step 9 asks us to evaluate the bounds on the F1 score and show that the F1 score will always be between 0 and 1.  
+
 Since precision and sensitivity can only be on the interval $[0,1]$ the denominator will always be at least as large as the numerator. That is to say that $a+b \geq a*b $ when $a$, $b$ are between $[0,1]$. 
 
 That means our fraction will be at most 1. However, we must also consider the 2. For that we look at the harmonic form referenced in Step 8 .
@@ -211,12 +214,12 @@ Here it is easy to see that even if we have a large value for both precision and
 ```{r}
 a <- runif(10000,0,1)
 b <- runif(10000,0,1)
-f.1 <- (2*a*b/(a+b))
-max(f.1)
+f1.sim <- (2*a*b/(a+b))
+max(f1.sim)
 ```
 
 
-# Step 10
+## Step 10
 
 Step 10 requires us to create a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). 
 
@@ -224,7 +227,6 @@ The function below returns the following requirements: a list that includes the 
 
 
 ```{r}
-
 data$class<- as.integer(data$class)
 
 roc_fun<-function(class, probability){
@@ -244,23 +246,32 @@ roc_fun<-function(class, probability){
 roc_fun(data$class, data$scored.probability)
 ```
 
-## Q11
-Here we apply each of our functions to the provided data
-```{r}
+## Step 11
+
+In Step 11, we apply our custom functions to the provided classification output dataset to produce all of the classification metrics discussed above. 
+
+```{r eval=FALSE}
 accuracy(data)
 sensitivity(data)
 specificity(data)
-
 error(data)
 precision(data)
-
 f1(data)
 ```
 
+The following contains the output from these functions:
 
+```{r echo=FALSE}
+output <- data.frame(accuracy=accuracy(data), sensitivity=sensitivity(data), specificity=specificity(data), error=error(data), precision=precision(data), f1=f1(data))
+output %>% round(4) %>% kable() %>% kable_styling()
+```
 
-## Q12
-We can verify our calculations by using the ```caret``` package and converting the `scored.class` and `class` vectors to factors.
+## Step 12
+
+In Step 12, we explored the `caret` package to verify our calculations and convert the `scored.class` and `class` vectors to factors.  
+
+The output from this package matches the results achieved in our functions above.  
+
 ```{r}
 data$class<- as.factor(data$class)
 data$scored.class<- as.factor(data$scored.class)
@@ -269,13 +280,18 @@ cf
 ```
 
 
-## Q13
+## Step 13
 
-Likewise, the pROC package can be used to verify our results from the ROC curve.
+Similarly, we also investigated the `pROC` package and used its functions to verify our results from the ROC curve.
+
+As you can see below, the `roc` function and our custom `roc_function` from step 10 both achieve the same result. 
+
 ```{r}
 par(pty = "s")
 roc(class ~ scored.probability, data, smooth=FALSE, plot = TRUE, print.auc=TRUE,legacy.axes =TRUE,  col="red", main ="ROC Curve")
 ```
+
+
 
 
 
