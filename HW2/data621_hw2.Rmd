@@ -53,10 +53,10 @@ data$scored.class<- as.factor(data$scored.class)
 
 # Step 2
 
-Step 2 requires us to use the `table()` function to get the raw confusion matrix for the scored dataset. The provided data set has three key columns we will use: ???
-    - `class`: the actual class for the observation ???
-    - `scored.class`: the predicted class for the observation (based on a threshold of 0.5) ???
-    - `scored.probability`: the predicted probability of success for the observation 
+Step 2 requires us to use the `table()` function to get the raw confusion matrix for the scored dataset. The provided data set has three key columns we will use:  
+    - `class`: the actual class for the observation  
+    - `scored.class`: the predicted class for the observation (based on a threshold of 0.5)  
+    - `scored.probability`: the predicted probability of success for the observation  
 
 The confusion matrix puts the measured value on x-axis and the actual value on the y-axis. The rows in the table below represent the predictions from the `scored.class` column, whereas the columns depict the actual values from the `class` variable.  
 
