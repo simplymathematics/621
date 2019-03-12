@@ -2,12 +2,14 @@
 title: "Data621 HW2"
 author: "Team 2"
 date: "04/03/2019"
-output: 
+output:
+  pdf_document:
+    toc: yes
   html_document:
-    theme: cosmo
-    toc: true
-    toc_float: true
     pdf_document: default
+    theme: cosmo
+    toc: yes
+    toc_float: yes
 ---
 
 # Overview
@@ -186,7 +188,9 @@ $$F_1 = \frac{2 * \text{precision} * \text{sensitivity}}{\text{precision}+\text{
 $F_1$ score is a hybrid score that attempts to weigh the recall(1/specificity) and precision
 in one metric using the harmonic average. Simply put the F1 score is:
 
-$$F_1 = \frac{(\text{recall}^{-1} + \text{precision}^{-1})}{2}^{-1}$$
+$$
+F_1 = \frac{(\text{recall}^{-1} + \text{precision}^{-1})}{2}^{-1}
+$$
 
 ```{r}
 f1 <- function(df) {
@@ -205,7 +209,11 @@ return (2*TP/(2*TP+FN+FP))
 
 Step 9 asks us to evaluate the bounds on the F1 score and show that the F1 score will always be between 0 and 1.  
 
-Since precision and sensitivity can only be on the interval $[0,1]$ the denominator will always be at least as large as the numerator. That is to say that $a+b \geq a*b $ when $a$, $b$ are between $[0,1]$. 
+Since precision and sensitivity can only be on the interval $[0,1]$ the denominator will always be at least as large as the numerator. That is to say that $$
+a+b \geq a*b 
+$$ 
+
+when $a$, $b$ are between $[0,1]$. 
 
 That means our fraction will be at most 1. However, we must also consider the 2. For that we look at the harmonic form referenced in Step 8 .
 
