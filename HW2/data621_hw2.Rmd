@@ -54,9 +54,9 @@ data$scored.class<- as.factor(data$scored.class)
 # Step 2
 
 Step 2 requires us to use the `table()` function to get the raw confusion matrix for the scored dataset. The provided data set has three key columns we will use:  
-    - `class`: the actual class for the observation  
-    - `scored.class`: the predicted class for the observation (based on a threshold of 0.5)  
-    - `scored.probability`: the predicted probability of success for the observation  
+   * `class`: the actual class for the observation  
+   * `scored.class`: the predicted class for the observation (based on a threshold of 0.5)  
+   * `scored.probability`: the predicted probability of success for the observation  
 
 The confusion matrix puts the measured value on x-axis and the actual value on the y-axis. The rows in the table below represent the predictions from the `scored.class` column, whereas the columns depict the actual values from the `class` variable.  
 
@@ -117,9 +117,11 @@ As expected, the accuracy and error rates add up to 1.
 accuracy(data) + error(data)
 ```
 
-## Q5
+# Step 5
 
-Precision is a measure of how many detected positives were correctly classified.
+Step 5 requires us to create a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the precision of the predictions. 
+
+The precisions function measures how many detected positives were correctly classified.
 
 ```{r}
 precision <- function(df) {
