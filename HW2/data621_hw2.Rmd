@@ -223,8 +223,9 @@ max(f1.sim)
 
 Step 10 requires us to create a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). 
 
-The function below returns the following requirements: a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Per instructions, we used a sequence of thresholds ranging from 0 to 1 at 0.01 intervals to complete this step. 
+The function below returns the following requirements: a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC).  
 
+Per instructions, we used a sequence of thresholds ranging from 0 to 1 at 0.01 intervals to complete this step. 
 
 ```{r}
 data$class<- as.integer(data$class)

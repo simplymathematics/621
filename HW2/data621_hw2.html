@@ -369,12 +369,13 @@ return (2*TP/(2*TP+FN+FP))
 b &lt;- runif(10000,0,1)
 f1.sim &lt;- (2*a*b/(a+b))
 max(f1.sim)</code></pre>
-<pre><code>## [1] 0.9946705</code></pre>
+<pre><code>## [1] 0.9913996</code></pre>
 </div>
 <div id="step-10" class="section level2">
 <h2>Step 10</h2>
 <p>Step 10 requires us to create a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example).</p>
-<p>The function below returns the following requirements: a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Per instructions, we used a sequence of thresholds ranging from 0 to 1 at 0.01 intervals to complete this step.</p>
+<p>The function below returns the following requirements: a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC).</p>
+<p>Per instructions, we used a sequence of thresholds ranging from 0 to 1 at 0.01 intervals to complete this step.</p>
 <pre class="r"><code>data$class&lt;- as.integer(data$class)
 
 roc_fun&lt;-function(class, probability){
