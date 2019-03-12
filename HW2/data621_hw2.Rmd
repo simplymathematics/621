@@ -43,12 +43,10 @@ default(kable_styling)  <- list(bootstrap_options = c("basic"),
 
 # Step 1
 
-Step 1 requires us to download the classification output dataset file. We accomplished this by reading the data and converting the `scored.class` vector to a factor.
+Step 1 requires us to download the classification output dataset file. We accomplished this by reading the data.
 
 ```{r}
 data<-read.csv('data.csv')
-data$class<- as.factor(data$class)
-data$scored.class<- as.factor(data$scored.class)
 ```
 
 # Step 2
@@ -220,8 +218,26 @@ max(f.1)
 
 ## Q10
 
+```{r}
 
+data$class<- as.integer(data$class)
 
+roc_fun<-function(class, probability){
+
+  actuals <- class[order(probability)]
+
+  sens <- (sum(actuals) - cumsum(actuals))/sum(actuals)
+  spec <- cumsum(!actuals)/sum(!actuals)
+  (auc <- round(sum(spec*diff(c(0, 1 - sens))),3))
+
+  plot(1 - spec, sens, type = "l", col = "red", main ="ROC Curve", ylab = "Sensitivity", xlab = "1 - Specificity")
+  abline(c(0,0),c(1,1))
+  legend(.6,.2,auc,title = "AUC")
+
+}
+
+roc_fun(data$class, data$scored.probability)
+```
 
 ## Q11
 Here we apply each of our functions to the provided data
@@ -239,8 +255,10 @@ f1(data)
 
 
 ## Q12
-We can verify our calculations by using the ```caret``` package.
+We can verify our calculations by using the ```caret``` package and converting the `scored.class` and `class` vectors to factors.
 ```{r}
+data$class<- as.factor(data$class)
+data$scored.class<- as.factor(data$scored.class)
 cf<-confusionMatrix(data$scored.class, data$class, positive = "1")
 cf
 ```
@@ -250,7 +268,8 @@ cf
 
 Likewise, the pROC package can be used to verify our results from the ROC curve.
 ```{r}
-roc(class ~ scored.probability, data, smooth=FALSE, plot = TRUE, print.auc=TRUE,  col="red")
+par(pty = "s")
+roc(class ~ scored.probability, data, smooth=FALSE, plot = TRUE, print.auc=TRUE,legacy.axes =TRUE,  col="red", main ="ROC Curve")
 ```
 
 
