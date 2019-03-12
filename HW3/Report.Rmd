@@ -1,34 +1,70 @@
 ---
 title: "HW 3"
-author: "simplymathematics"
-date: "March 11, 2019"
-output: pdf_document
+author: "Team 2"
+date: "April 10, 2019"
+output: 
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
+    pdf_document: default
 ---
-# Data 621 HW 3
+
+# Overview
+
+Task: Explore, analyze and model a data set containing information on crime for various neighborhoods of a major city. Each record has a response variable indicating whether or not the crime rate is above the median crime rate (1) or not (0). 
+ 
+## Objective 
+
+Your objective is to build a binary logistic regression model on the training data set to predict whether the neighborhood will be at risk for high crime levels. You will provide classifications and probabilities for the evaluation data set using your binary logistic regression model. You can only use the variables given to you (or variables that you derive from the variables provided). Below is a short description of the variables of interest in the data set: 
 
 ## Dependencies
-```{r, echo = FALSE}
-library(ggplot2)
-#install.packages('corrplot')
-```
-For this project, we used Rstudio, ggplot2, and corrplot. First we read the data as a csv then performed some simple statistical calculations so that we could explore the data. Below we can see the data as it was read from the csv.
 
-## Data Exploration
+For this project, we used Rstudio, ggplot2, and corrplot. 
+
+```{r, echo = TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
+#install.packages('corrplot')
+
+require(ggplot2)
+require(corrplot)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
+# Requirements for formatting and augmenting default settings for chunks. 
+require(knitr)
+require(kableExtra)
+require(default)
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+default(kable_styling)  <- list(bootstrap_options = c("basic"), 
+                                position = "center", 
+                                full_width = TRUE,
+                                font_size = NULL)
+```
+
+# Data Exploration
+
+First we read the data as a csv then performed some simple statistical calculations so that we could explore the data. Below we can see the data as it was read from the csv.
 
 ```{r, echo = FALSE}
 training <- as.data.frame(read.csv("crime-training-data_modified.csv"))
 test <- as.data.frame(read.csv("crime-evaluation-data_modified.csv"))
 head(training)
 ```
+
 We then calculated the mean and standard deviation for each data vector. Below is the result of those calculations.
-```{r, echo = FALSE}
+
+```{r}
 means <- sapply(training, mean)
 sds   <- sapply(training, sd)
 explore <- as.data.frame(cbind( means, sds))
 explore
 ```
-Below is a bar chart that illutrates the average and standard deviation for each of our data vectors. As we can see, the ```tax``` vector is a totally different magnitude than the rest. Models involving this vector will benefit from normalization or scaling.
-```{r}
+
+Below is a bar chart that illutrates the average and standard deviation for each of our data vectors. As we can see, the `tax` vector is a totally different magnitude than the rest. Models involving this vector will benefit from normalization or scaling.
+
+```{r echo=FALSE}
 ggplot(explore, aes(x = row.names(explore), y = means))+ 
   geom_bar(stat = 'identity') + 
   labs(title = "Means of Various Features") + 
@@ -37,6 +73,7 @@ ggplot(explore, aes(x = row.names(explore), y = means))+
   theme(panel.background = element_blank()) + 
   geom_errorbar(aes(ymin = means - sds, ymax = means + sds))
 ```
+
 We can see our correlation matrix below. A dark blue circle represents a strong positive relationship and a dark red circle represents a strong negative relationship between two variables. We can see that indus, nox, target, and dis have the most colinearity. Likewise, these vectors are the best predictors for the target value. Note that this plot only includes rows tha have data in each column.L
 
 ```{r, echo = FALSE}
@@ -50,11 +87,13 @@ We can see that including rows without all of the data does not significantly ef
 results <- cor(training, method = 'pearson')
 corrplot::corrplot(results, method = 'circle')
 ```
+
 we can see how many ```NAs``` are in each column to see if we need to impute anything.
 
-```{r, echo = FALSE}
+```{r, echo = TRUE}
 apply(training, 2, function(x) length(!is.na(x)))
 ```
+
 As we can see, each data vector has the same number of entries, 466. Imputation will not be necessary. Finally, we can use a randomforest method to verify our assumptions from the correlation plot.
 ```{r, echo = FALSE}
 training2 <- training
@@ -65,22 +104,24 @@ fit <- randomForest::randomForest(training2, target, importance = TRUE, ntree = 
 
 randomForest::varImpPlot(fit)
 ```
-We verified our assumptions above using 1000 random forests. The ```nox```, ```rad```, ```indus```, and ```tax``` have the most effect. While ```dis``` is strongly colinear, it has less effect on the target (likely due to it encoding information stored redundantly in another vector). 
-## Data Preparation
+
+We verified our assumptions above using 1000 random forests. The `nox`,  `rad`, `indus`, and `tax` have the most effect. While `dis`is strongly colinear, it has less effect on the target (likely due to it encoding information stored redundantly in another vector). 
+
+# Data Preparation
 - [x]  Fix missing Values (None!)
 - [ ] Create Flags for missing variable
 - [ ] Bin Data
 - [ ] Transforms (BoxCox, etc)
 - [ ]  Combine Variables ?
 
-## Build Models
+# Build Models
 
 - [ ] 3 binary logistic models
 - [ ] forward, stepwise, random forest, etc
 - [ ] Inferences
 - [ ] Coefficients
 
-## Select Models
+# Select Models
 
 - [ ] Use Log Likelihood, AIC, ROC curve,
 - [ ] Evaluate Training Set
