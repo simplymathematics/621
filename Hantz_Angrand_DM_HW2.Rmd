@@ -1,0 +1,325 @@
+---
+title: "Hantz_Angrand_DM_HW2"
+author: "Hantz Angrand"
+date: "March 10, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Upload libraries
+```{r}
+#library(tidyverse)
+```
+
+#Upload data
+
+
+
+```{r}
+df<-read.csv("C:/Users/hangr/Documents/Spring2019/Data mining/HW2/classification-output-data.csv")
+
+head(df)
+```
+#Use table() function to evaluate confusion matrix
+
+```{r}
+conf_mat<-with(df, table("prediction"=scored.class, "Reference"=class))
+
+conf_mat
+```
+Bases on the confusion matrix above a (0,0) is true negative (TN), (0,1) is false positive (FP), (1,0) is false Negative (FN) and (1,1) is true positive (TP).  I order to evaluate if the columns or rows make sense we introduce a label column in the dataset with values TN, FP, Fn and TP.
+
+```{r}
+df["label"]<- ifelse(df["class"]==0 & df["scored.class"]==0, "TN",
+                     ifelse(df["class"]==0 & df["scored.class"]==1,"FP",
+                            ifelse(df["class"]==1 & df["scored.class"]==0, "FN", "TP")))
+
+#Confusion Matrix
+table(df["label"])
+  
+```
+
+If we consider the value 30 in the dataset.  it has a reference of 1 and the predicted value is 1 That means eventhough it is positive it is predicted to be negative as shown in the confusion matrix above.  It is False negative.  Rows and columns make sense.
+
+
+3.- Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the accuracy of the predictions. 
+
+$$
+AP=\frac{TP + TN}{TP + FP + TN+ FN}
+$$
+#Accuracy function
+```{r}
+df<-read.csv("C:/Users/hangr/Documents/Spring2019/Data mining/HW2/classification-output-data.csv")
+
+accu_f<-function(df, actual, predicted){
+  x<-as.vector(table(df[,predicted] , df[,actual] ))
+  names(x)<-c("TN","FP","FN","TP")
+  acc<-(x["TP"] + x["TN"])/sum(x)
+  return(as.numeric(acc))
+  
+}
+
+accu_f(df,"class", "scored.class")
+```
+
+#Classification Error Rate
+$$
+CER = \frac{FP + FN}{TP + FP + FN + TN}
+$$
+```{r}
+cer<-function(df,actual,predicted){
+  x<-as.vector(table(df[,predicted], df[,actual]))
+  names(x)<-c("TN","FP","FN","TP")
+  cer_cal<-(x["FP"] + x["FN"])/sum(x)
+  return(as.numeric(cer_cal))
+}
+
+cer(df, "class","scored.class")
+```
+
+
+#Verify that accuracy and error rate sums to one
+```{r}
+#acc + cer = 1
+0.8066298 + 0.1933702 == 1
+```
+
+#5.- Return precision of the prediction
+$$
+precision=\frac{TP}{TP + FP}
+$$
+
+
+
+
+```{r}
+prec<-function(df, actual, predicted){
+  x<-as.vector(table(df[,predicted],df[,actual]))
+  names(x)<-c("TN","FP","FN","TP")
+  prec_cal<-x["TP"]/(x["TP"] + x["FP"])
+  return(as.numeric(prec_cal))
+}
+
+prec(df, "class", "scored.class")
+
+```
+
+#6.-Return the sensivity of the prediction
+$$
+sensivity = \frac{TP}{TP + FN}
+$$
+
+```{r}
+sens<-function(df, actual, predicted){
+  x<-as.vector(table(df[,predicted],df[,actual]))
+  names(x)<-c("TN","FP","FN","TP")
+  sens_cal<-x["TP"]/(x["TP"] + x["FN"])
+  return(as.numeric(sens_cal))
+}
+
+sens(df,"class", "scored.class")
+```
+
+
+#7.-Return of the specificity
+$$
+specificity=\frac{TN}{TN +TP}
+$$
+
+```{r}
+spec<-function(df, actual, predicted){
+  x<-as.vector(table(df[,predicted],df[,actual]))
+  names(x)<-c("TN","FP","FN","TP")
+  spec_cal<-x["TN"]/(x["TN"] + x["TP"])
+  
+  return(as.numeric(spec_cal))
+  
+}
+
+spec(df,"class", "scored.class")
+```
+
+#8.-Return F1 Score
+$$
+F1=\frac{2*Precision*Sensivity}{Precision +sensivity}
+$$
+```{r}
+f1score<-function(df,actual, predicted){
+  precision<-prec(df, actual, predicted)
+  sensitivity<-sens(df,actual, predicted)
+  f1score_cal<-(2*precision*sensitivity)/(precision + sensitivity)
+  return(as.numeric(f1score_cal))
+  
+}
+
+f1score(df, "class","scored.class")
+
+```
+
+#9.-Show F1 score is always between 0 and 1
+```{r}
+f1scorev<-function(df,actual, predicted){
+  precision<-prec(df, actual, predicted)
+  sensitivity<-sens(df,actual, predicted)
+  precision >0 & precision <1
+  sensitivity>0 & sensitivity<1
+  return(precision*sensitivity<precision)
+}
+
+f1scorev(df,"class","scored.class")
+```
+
+#10
+10. Write a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). Your function should return a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Note that I recommend using a sequence of thresholds ranging from 0 to 1 at 0.01 intervals
+
+```{r}
+roc <- function(df, actual, probab){
+ tr<-seq(0.01,1,0.01)
+ val_x<-vector()
+ val_y<-vector()
+ 
+ for (i in tr){
+   df["pred"]<-ifelse(df[probab]<i,0,1)
+ 
+   
+   spec <- function(df, actual, pred){
+     actual <- df[actual]
+     pred <- df[pred]
+     df_new <-  ifelse(actual==0 & pred==0, "TN",ifelse(actual==0 & pred==1, "FP",
+                                                ifelse(actual==1 & pred==0, "FN", "TP")))
+     conf <-table(df_new)
+     m_spec <- conf["TN"]/(conf["TN"]+conf["FP"])
+     return(as.numeric(m_spec))
+   }
+   
+   sens <- function(df, actual, pred){
+     actual <- df[actual]
+     pred <- df[pred]
+     df_new <-  ifelse(actual==0 & pred==0, "TN",ifelse(actual==0 & pred==1, "FP",
+                                                ifelse(actual==1 & pred==0, "FN", "TP")))
+     conf <-table(df_new)
+     m_sens <- conf["TP"]/(conf["TP"]+conf["FN"])
+     return(as.numeric(m_sens))
+}
+
+ 
+ val_x<-c(val_x, 1-spec(df, actual, "pred"))
+ val_y<-c(val_y, sens(df, actual, "pred"))
+ }
+ 
+ df_xy<-data.frame(val_x,val_y)
+ df_xy<-df_xy[complete.cases(df_xy),]
+ 
+ b<--diff(df_xy$val_x)
+ 
+ auc<-min(df_xy$val_x)*min(df_xy$val_y)/2 +
+   sum(b*df_xy$val_y[-length(df_xy$val_y)]) +
+   (1-max(df_xy$val_x))*max(df_xy$val_y)+
+   ((1-max(df_xy$val_x))*(1-max(df_xy$val_y))/2)
+ 
+ return(c(plot(val_y~val_x, df_xy, type="l",main="ROC Curve"), abline(0,1,lty=2),auc))
+ 
+}
+
+roc(df, "class","scored.probability")
+```
+
+11. Use your created R functions and the provided classification output data set to produce all of the classification metrics discussed above. 
+```{r}
+#Accuracy
+print(paste0("Accuracy: ", accu_f(df,"class", "scored.class")))
+#Classification Error Rate
+print(paste0("Classification Error Rate : ",cer(df, "class","scored.class")))
+#Precision
+print(paste0("Precision: ", prec(df, "class", "scored.class")))
+#Sensivity
+print(paste0("Sensivity: ", sens(df,"class", "scored.class")))
+#Specificity
+print(paste0("Specificity: ", spec(df,"class", "scored.class")))
+#F1 Score
+print(paste0("F1 Score : ", f1score(df, "class","scored.class")))
+```
+ 
+12.Investigate the caret package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. Apply the functions to the data set. How do the results compare with your own functions? 
+
+```{r}
+#Confusion Matrix
+#df<-read.csv("C:/Users/hangr/Documents/Spring2019/Data mining/HW2/classification-output-data.csv")
+#library(caret)
+#confus_mat<-confusionMatrix(df$scored.class, df$class, positive ="1")
+#confus_mat$table
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+???
+
+
+
+
+
+
+
+???????????????????????????????????????????????? ???????????????????? ????????????????
+
+
+
+
+
+
+
+
+
