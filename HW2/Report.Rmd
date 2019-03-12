@@ -3,13 +3,13 @@ title: "Data 621 HW2"
 author: "Team 2"
 date: "03/13/2019"
 output:
+  pdf_document:
+    toc: yes
   html_document:
     pdf_document: default
     theme: cosmo
     toc: yes
     toc_float: yes
-  pdf_document:
-    toc: yes
 ---
 
 # Overview
