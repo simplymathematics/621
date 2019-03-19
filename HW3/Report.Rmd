@@ -137,7 +137,7 @@ We verified our assumptions above using 1000 random forests. The `nox`,  `rad`, 
 
 # Data Preparation
 
-In the exploration section, we identified that there were no missing values in the dataset could affect the outcome of our model. We additionally found that the following four variables had the strongest correlation with our target goal:
+In the exploration section, we identified that there were no missing values in the dataset would affect the outcome of our model. We additionally found that the following four variables had the strongest correlation with our target goal:
 
 1. `nox`
 2. `rad` 
@@ -153,12 +153,14 @@ In the following section, we will analyze and transform these variables to use i
 This variable represents nitrogen oxides concentration (parts per 10 million). The plots below show the `nox` data is multimodal, skewed right, and centered around 0.55. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
 ```{r echo=F}
-ggplot(training, aes(x=nox)) +
-    geom_histogram(binwidth=.05, colour="black", fill="white") +
-    geom_vline(aes(xintercept=median(nox, na.rm=T)),  
+ggplot(training, aes(x=nox))+
+  geom_histogram(aes(y=..density..), colour="black", fill="white")+
+  geom_density(alpha=.2, fill="lightgrey")+
+  geom_vline(aes(xintercept=median(nox, na.rm=T)),  
                color="red", linetype="dashed", size=1) + 
   geom_vline(aes(xintercept=mean(nox, na.rm=T)),  
                color="blue", linetype="dashed", size=1)
+  
 
 summary(training$nox)
 ```
@@ -170,17 +172,26 @@ qqnorm(training$nox)
 qqline(training$nox)
 ```
 
+
+```{r}
+stud_teach_ratio <- crime_train$ptratio
+
+stud_teach_ratio <- cut(stud_teach_ratio, breaks = 3, labels=c("Small", "Medium", "Large"))
+```
+
 ## `rad`
 
 This an index variable that represents accessibility to radial highways. The plots below show the `rad` data is bimodal and centered around 5. This data almost follows a normal distribution, however there is an extreme outlier that skews the mean to the right. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
 ```{r echo=F}
-ggplot(training, aes(x=rad)) +
-    geom_histogram(binwidth=1, colour="black", fill="white") +
-    geom_vline(aes(xintercept=median(rad, na.rm=T)),  
-               color="red", linetype="dashed", size=1) +
-    geom_vline(aes(xintercept=mean(rad, na.rm=T)),  
+ggplot(training, aes(x=rad))+
+  geom_histogram(aes(y=..density..), colour="black", fill="white")+
+  geom_density(alpha=.2, fill="lightgrey")+
+  geom_vline(aes(xintercept=median(rad, na.rm=T)),  
+               color="red", linetype="dashed", size=1) + 
+  geom_vline(aes(xintercept=mean(rad, na.rm=T)),  
                color="blue", linetype="dashed", size=1)
+  
 
 summary(training$rad)
 ```
@@ -197,11 +208,12 @@ qqline(training$rad)
 This variable represents the proportion of non-retail business acres per suburb. The plots below show the `indus` data is bimodal, skewed right, and centered around 10. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
 ```{r echo=F}
-ggplot(training, aes(x=indus)) +
-    geom_histogram(binwidth=2, colour="black", fill="white") +
-    geom_vline(aes(xintercept=median(indus, na.rm=T)),  
-               color="red", linetype="dashed", size=1) +
-    geom_vline(aes(xintercept=mean(indus, na.rm=T)),  
+ggplot(training, aes(x=indus))+
+  geom_histogram(aes(y=..density..), colour="black", fill="white")+
+  geom_density(alpha=.2, fill="lightgrey")+
+  geom_vline(aes(xintercept=median(indus, na.rm=T)),  
+               color="red", linetype="dashed", size=1) + 
+  geom_vline(aes(xintercept=mean(indus, na.rm=T)),  
                color="blue", linetype="dashed", size=1)
 
 summary(training$indus)
@@ -219,12 +231,14 @@ qqline(training$indus)
 This variable represents full-value property-tax rate per $10,000. The values stored in this variable are significantly larger than the ones previously explored. The plots below show that the `tax` data is bimodal, skewed right, and centered around 330. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
 ```{r echo=F}
-ggplot(training, aes(x=tax)) +
-    geom_histogram(binwidth=50, colour="black", fill="white") +
-    geom_vline(aes(xintercept=median(tax, na.rm=T)),  
-               color="red", linetype="dashed", size=1) +
-      geom_vline(aes(xintercept=mean(tax, na.rm=T)),  
+ggplot(training, aes(x=tax))+
+  geom_histogram(aes(y=..density..), colour="black", fill="white")+
+  geom_density(alpha=.2, fill="lightgrey")+
+  geom_vline(aes(xintercept=median(tax, na.rm=T)),  
+               color="red", linetype="dashed", size=1) + 
+  geom_vline(aes(xintercept=mean(tax, na.rm=T)),  
                color="blue", linetype="dashed", size=1)
+
 
 summary(training$tax)
 ```
@@ -255,13 +269,8 @@ transform <- function(x){
 }
 data2 <- as.data.frame(sapply(data, transform))
 sapply(data2, hist)
+sapply(data2, qqnorm)
 ```
-
-- [x]  Fix missing Values (None!)
-- [ ] Create Flags for missing variable
-- [ ] Bin Data
-- [ ] Transforms (BoxCox, etc)
-- [ ]  Combine Variables ?
 
 
 # Build Models
