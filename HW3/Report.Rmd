@@ -2,31 +2,51 @@
 title: "HW 3"
 author: "Team 2"
 date: "April 10, 2019"
-output: 
+output:
+  pdf_document:
+    toc: yes
   html_document:
-    theme: cosmo
-    toc: true
-    toc_float: true
     pdf_document: default
+    theme: cosmo
+    toc: yes
+    toc_float: yes
 ---
 
 # Overview
 
-Task: Explore, analyze and model a data set containing information on crime for various neighborhoods of a major city. Each record has a response variable indicating whether or not the crime rate is above the median crime rate (1) or not (0). 
+In this homework assignment, you will explore, analyze and model a data set containing information on crime for various neighborhoods of a major city. Each record has a response variable indicating whether or not the crime rate is above the median crime rate (1) or not (0). Below is a short description of the variables of interest in the data set: 
  
+1. `zn`: proportion of residential land zoned for large lots (over 25000 square feet) (predictor variable)
+2. `indus`: proportion of non-retail business acres per suburb (predictor variable)
+3. `chas`: a dummy var. for whether the suburb borders the Charles River (1) or not (0) (predictor variable)
+4. `nox`: nitrogen oxides concentration (parts per 10 million) (predictor variable)
+5. `rm`: average number of rooms per dwelling (predictor variable)
+6. `age`: proportion of owner-occupied units built prior to 1940 (predictor variable)
+7. `dis`: weighted mean of distances to five Boston employment centers (predictor variable)
+8. `rad`: index of accessibility to radial highways (predictor variable)
+9. `tax`: full-value property-tax rate per $10,000 (predictor variable)
+10. `ptratio`: pupil-teacher ratio by town (predictor variable)
+11. `black`: 1000(Bk - 0.63)2 where Bk is the proportion of blacks by town (predictor variable)
+12. `lstat`: lower status of the population (percent) (predictor variable)
+13. `medv`: median value of owner-occupied homes in $1000s (predictor variable)
+14. `target`: whether the crime rate is above the median crime rate (1) or not (0) (response variable)
+
 ## Objective 
 
 Your objective is to build a binary logistic regression model on the training data set to predict whether the neighborhood will be at risk for high crime levels. You will provide classifications and probabilities for the evaluation data set using your binary logistic regression model. You can only use the variables given to you (or variables that you derive from the variables provided). Below is a short description of the variables of interest in the data set: 
 
 ## Dependencies
 
-For this project, we used Rstudio, ggplot2, and corrplot. 
+Replication of our work requires the following packages in Rstudio:
 
 ```{r, echo = TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
 #install.packages('corrplot')
 
 require(ggplot2)
 require(corrplot)
+require(dplyr)
+require(tidyr)
+require(randomForest)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
@@ -45,21 +65,24 @@ default(kable_styling)  <- list(bootstrap_options = c("basic"),
 
 # Data Exploration
 
-First we read the data as a csv then performed some simple statistical calculations so that we could explore the data. Below we can see the data as it was read from the csv.
+First, we read the data as a csv then performed some simple statistical calculations so that we could explore the data. Below we can see a sample of the data output as it was read from the csv.
 
 ```{r, echo = FALSE}
 training <- as.data.frame(read.csv("crime-training-data_modified.csv"))
 test <- as.data.frame(read.csv("crime-evaluation-data_modified.csv"))
-head(training)
+
+training %>% slice(1:5) %>% kable() %>% kable_styling()
 ```
 
-We then calculated the mean and standard deviation for each data vector. Below is the result of those calculations.
+## Summary Statistics 
 
-```{r}
+We then calculated the mean and standard deviation for each data vector: 
+
+```{r echo=FALSE}
 means <- sapply(training, mean)
 sds   <- sapply(training, sd)
 explore <- as.data.frame(cbind( means, sds))
-explore
+kable(explore) %>% kable_styling()
 ```
 
 Below is a bar chart that illutrates the average and standard deviation for each of our data vectors. As we can see, the `tax` vector is a totally different magnitude than the rest. Models involving this vector will benefit from normalization or scaling.
@@ -74,40 +97,48 @@ ggplot(explore, aes(x = row.names(explore), y = means))+
   geom_errorbar(aes(ymin = means - sds, ymax = means + sds))
 ```
 
-We can see our correlation matrix below. A dark blue circle represents a strong positive relationship and a dark red circle represents a strong negative relationship between two variables. We can see that indus, nox, target, and dis have the most colinearity. Likewise, these vectors are the best predictors for the target value. Note that this plot only includes rows tha have data in each column.L
+## Correlation  
+
+We can see our correlation matrix below. A dark blue circle represents a strong positive relationship and a dark red circle represents a strong negative relationship between two variables. We can see that `indus`, `nox`, `target`, and `dis` have the most colinearity. Likewise, these vectors are the best predictors for the target value. Note that this plot only includes rows tha have data in each column.
 
 ```{r, echo = FALSE}
 results <- cor(training, method = 'pearson', use = 'complete.obs')
 corrplot::corrplot(results, method = 'circle')
 ```
+**EDIT QUESTION: SEEING AS THERE ARE NO NA VALUES, CAN WE JUST MENTION THAT FIRST THEN DO ONE CORRPLOT? DOING TWO FOR MISSING ROW VALUES SEEMS REDUNDANT**
 
-We can see that including rows without all of the data does not significantly effect the results.
+We can compare the plot above to the one below, which includes rows without all of the data present. The availability of data does not significantly affect the results.
 
 ```{r, echo= FALSE}
 results <- cor(training, method = 'pearson')
 corrplot::corrplot(results, method = 'circle')
 ```
 
-we can see how many ```NAs``` are in each column to see if we need to impute anything.
+We can explore how many `NAs` are in each column to see if we need to impute any of the variables:
 
-```{r, echo = TRUE}
-apply(training, 2, function(x) length(!is.na(x)))
+```{r echo=FALSE}
+apply(training, 2, function(x) length(!is.na(x))) %>% t() %>% kable() %>% kable_styling()
 ```
 
-As we can see, each data vector has the same number of entries, 466. Imputation will not be necessary. Finally, we can use a randomforest method to verify our assumptions from the correlation plot.
+As we can see, each data vector has the same number of entries, 466. Imputation will not be necessary. Finally, we can use the `randomforest` package to verify our assumptions from the correlation plot.
+
 ```{r, echo = FALSE}
 training2 <- training
 training2$target <- NULL
 target <- training$target
 
-fit <- randomForest::randomForest(training2, target, importance = TRUE, ntree = 1000)
+fit <- randomForest(training2, target, importance = TRUE, ntree = 1000)
 
-randomForest::varImpPlot(fit)
+varImpPlot(fit)
 ```
 
-We verified our assumptions above using 1000 random forests. The `nox`,  `rad`, `indus`, and `tax` have the most effect. While `dis`is strongly colinear, it has less effect on the target (likely due to it encoding information stored redundantly in another vector). 
+We verified our assumptions above using 1000 random forests. The `nox`,  `rad`, `indus`, and `tax` have the most effect. While `dis`is strongly colinear, it has less effect on the target. This is likely due to it encoding information stored redundantly in another vector. 
 
 # Data Preparation
+
+Describe how you have transformed the data by changing the original variables or creating new variables. If you did transform the data or create new variables, discuss why you did this. Here are some possible transformations.
+
+
 - [x]  Fix missing Values (None!)
 - [ ] Create Flags for missing variable
 - [ ] Bin Data
