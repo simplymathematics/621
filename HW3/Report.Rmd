@@ -155,7 +155,7 @@ This variable represents nitrogen oxides concentration (parts per 10 million). T
 ```{r echo=F}
 ggplot(training, aes(x=nox)) +
     geom_histogram(binwidth=.05, colour="black", fill="white") +
-    geom_vline(aes(xintercept=median(nox, na.rm=T)),   # Ignore NA values for mean
+    geom_vline(aes(xintercept=median(nox, na.rm=T)),  
                color="red", linetype="dashed", size=1)
 
 summary(training$nox)
@@ -170,12 +170,12 @@ qqline(training$nox)
 
 ## `rad`
 
-This an index variable that represents accessibility to radial highways. The plots below show the `rad` data is unimodal and centered around 5. This data appears to follow a normal distribution, however there is an extreme outlier that skews the mean value to the right. 
+This an index variable that represents accessibility to radial highways. The plots below show the `rad` data is bimodal and centered around 5. This data almost follows a normal distribution, however there is an extreme outlier that skews the mean to the right. 
 
 ```{r echo=F}
 ggplot(training, aes(x=rad)) +
     geom_histogram(binwidth=1, colour="black", fill="white") +
-    geom_vline(aes(xintercept=median(rad, na.rm=T)),   # Ignore NA values for mean
+    geom_vline(aes(xintercept=median(rad, na.rm=T)),  
                color="red", linetype="dashed", size=1)
 
 summary(training$rad)
@@ -190,7 +190,43 @@ qqline(training$rad)
 
 ## `indus` 
 
+This variable represents the proportion of non-retail business acres per suburb. The plots below show the `indus` data is bimodal, skewed right, and centered around 10.
+
+```{r echo=F}
+ggplot(training, aes(x=indus)) +
+    geom_histogram(binwidth=2, colour="black", fill="white") +
+    geom_vline(aes(xintercept=median(indus, na.rm=T)),  
+               color="red", linetype="dashed", size=1)
+
+summary(training$indus)
+```
+
+The `qqplot` below confirms that this variable does not follow a normal distribution. 
+
+```{r echo=F}
+qqnorm(training$indus)
+qqline(training$indus)
+```
+
 ## `tax` 
+
+This variable represents full-value property-tax rate per $10,000. The plots below show the `tax` data is bimodal, skewed right, and centered around 10.
+
+```{r echo=F}
+ggplot(training, aes(x=tax)) +
+    geom_histogram(binwidth=2, colour="black", fill="white") +
+    geom_vline(aes(xintercept=median(tax, na.rm=T)),  
+               color="red", linetype="dashed", size=1)
+
+summary(training$tax)
+```
+
+The `qqplot` below confirms that this variable does not follow a normal distribution. 
+
+```{r echo=F}
+qqnorm(training$tax)
+qqline(training$tax)
+```
 
 ## Variable Transformation 
 
