@@ -150,13 +150,15 @@ In the following section, we will analyze and transform these variables to use i
 
 ### `nox` variable
 
-This variable represents nitrogen oxides concentration (parts per 10 million). The plots below show the `nox` data is multimodal, skewed right, and centered around 0.55. 
+This variable represents nitrogen oxides concentration (parts per 10 million). The plots below show the `nox` data is multimodal, skewed right, and centered around 0.55. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
 ```{r echo=F}
 ggplot(training, aes(x=nox)) +
     geom_histogram(binwidth=.05, colour="black", fill="white") +
     geom_vline(aes(xintercept=median(nox, na.rm=T)),  
-               color="red", linetype="dashed", size=1)
+               color="red", linetype="dashed", size=1) + 
+  geom_vline(aes(xintercept=mean(nox, na.rm=T)),  
+               color="blue", linetype="dashed", size=1)
 
 summary(training$nox)
 ```
@@ -170,13 +172,15 @@ qqline(training$nox)
 
 ## `rad`
 
-This an index variable that represents accessibility to radial highways. The plots below show the `rad` data is bimodal and centered around 5. This data almost follows a normal distribution, however there is an extreme outlier that skews the mean to the right. 
+This an index variable that represents accessibility to radial highways. The plots below show the `rad` data is bimodal and centered around 5. This data almost follows a normal distribution, however there is an extreme outlier that skews the mean to the right. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
 ```{r echo=F}
 ggplot(training, aes(x=rad)) +
     geom_histogram(binwidth=1, colour="black", fill="white") +
     geom_vline(aes(xintercept=median(rad, na.rm=T)),  
-               color="red", linetype="dashed", size=1)
+               color="red", linetype="dashed", size=1) +
+    geom_vline(aes(xintercept=mean(rad, na.rm=T)),  
+               color="blue", linetype="dashed", size=1)
 
 summary(training$rad)
 ```
@@ -190,13 +194,15 @@ qqline(training$rad)
 
 ## `indus` 
 
-This variable represents the proportion of non-retail business acres per suburb. The plots below show the `indus` data is bimodal, skewed right, and centered around 10.
+This variable represents the proportion of non-retail business acres per suburb. The plots below show the `indus` data is bimodal, skewed right, and centered around 10. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
 ```{r echo=F}
 ggplot(training, aes(x=indus)) +
     geom_histogram(binwidth=2, colour="black", fill="white") +
     geom_vline(aes(xintercept=median(indus, na.rm=T)),  
-               color="red", linetype="dashed", size=1)
+               color="red", linetype="dashed", size=1) +
+    geom_vline(aes(xintercept=mean(indus, na.rm=T)),  
+               color="blue", linetype="dashed", size=1)
 
 summary(training$indus)
 ```
@@ -210,13 +216,15 @@ qqline(training$indus)
 
 ## `tax` 
 
-This variable represents full-value property-tax rate per $10,000. The plots below show the `tax` data is bimodal, skewed right, and centered around 10.
+This variable represents full-value property-tax rate per $10,000. The values stored in this variable are significantly larger than the ones previously explored. The plots below show that the `tax` data is bimodal, skewed right, and centered around 330. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
 ```{r echo=F}
 ggplot(training, aes(x=tax)) +
-    geom_histogram(binwidth=2, colour="black", fill="white") +
+    geom_histogram(binwidth=50, colour="black", fill="white") +
     geom_vline(aes(xintercept=median(tax, na.rm=T)),  
-               color="red", linetype="dashed", size=1)
+               color="red", linetype="dashed", size=1) +
+      geom_vline(aes(xintercept=mean(tax, na.rm=T)),  
+               color="blue", linetype="dashed", size=1)
 
 summary(training$tax)
 ```
@@ -230,15 +238,23 @@ qqline(training$tax)
 
 ## Variable Transformation 
 
+Our goal is to transform the following data 
 ```{r}
-data <-  training %>% select(nox, rad, indus, tax, target)
-head(data)
+data <-  training %>% select(nox, rad, indus, tax)
+data %>% slice(1:5) %>% kable() %>% kable_styling()
 ```
+
+
 
 We can fix this with a Box-Cox transformation, using the `forecast` package in R. 
 
 ```{r}
-
+data2 <- data
+transform <- function(x){
+  x <- BoxCox(x, lambda = BoxCox.lambda(x))
+}
+data2 <- as.data.frame(sapply(data, transform))
+sapply(data2, hist)
 ```
 
 - [x]  Fix missing Values (None!)
