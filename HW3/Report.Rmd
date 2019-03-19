@@ -47,6 +47,7 @@ require(corrplot)
 require(dplyr)
 require(tidyr)
 require(randomForest)
+require(forecast)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
@@ -136,14 +137,80 @@ We verified our assumptions above using 1000 random forests. The `nox`,  `rad`, 
 
 # Data Preparation
 
-Describe how you have transformed the data by changing the original variables or creating new variables. If you did transform the data or create new variables, discuss why you did this. Here are some possible transformations.
+In the exploration section, we identified that there were no missing values in the dataset could affect the outcome of our model. We additionally found that the following four variables had the strongest correlation with our target goal:
 
+1. `nox`
+2. `rad` 
+3. `indus`
+4. `tax`
+
+In the following section, we will analyze and transform these variables to use in the development of our model: 
+
+## Variable Exploration 
+
+### `nox` variable
+
+This variable represents nitrogen oxides concentration (parts per 10 million). The plots below show the `nox` data is multimodal, skewed right, and centered around 0.55. 
+
+```{r echo=F}
+ggplot(training, aes(x=nox)) +
+    geom_histogram(binwidth=.05, colour="black", fill="white") +
+    geom_vline(aes(xintercept=median(nox, na.rm=T)),   # Ignore NA values for mean
+               color="red", linetype="dashed", size=1)
+
+summary(training$nox)
+```
+
+The `qqplot` below confirms that this variable does not follow a normal distribution. 
+
+```{r echo=F}
+qqnorm(training$nox)
+qqline(training$nox)
+```
+
+## `rad`
+
+This an index variable that represents accessibility to radial highways. The plots below show the `rad` data is unimodal and centered around 5. This data appears to follow a normal distribution, however there is an extreme outlier that skews the mean value to the right. 
+
+```{r echo=F}
+ggplot(training, aes(x=rad)) +
+    geom_histogram(binwidth=1, colour="black", fill="white") +
+    geom_vline(aes(xintercept=median(rad, na.rm=T)),   # Ignore NA values for mean
+               color="red", linetype="dashed", size=1)
+
+summary(training$rad)
+```
+
+The `qqplot` below confirms that this variable does not follow a normal distribution. 
+
+```{r echo=F}
+qqnorm(training$rad)
+qqline(training$rad)
+```
+
+## `indus` 
+
+## `tax` 
+
+## Variable Transformation 
+
+```{r}
+data <-  training %>% select(nox, rad, indus, tax, target)
+head(data)
+```
+
+We can fix this with a Box-Cox transformation, using the `forecast` package in R. 
+
+```{r}
+
+```
 
 - [x]  Fix missing Values (None!)
 - [ ] Create Flags for missing variable
 - [ ] Bin Data
 - [ ] Transforms (BoxCox, etc)
 - [ ]  Combine Variables ?
+
 
 # Build Models
 
