@@ -174,7 +174,7 @@ qqline(training$nox)
 
 
 ```{r}
-stud_teach_ratio <- crime_train$ptratio
+stud_teach_ratio <- training$ptratio
 
 stud_teach_ratio <- cut(stud_teach_ratio, breaks = 3, labels=c("Small", "Medium", "Large"))
 ```
@@ -196,7 +196,7 @@ ggplot(training, aes(x=rad))+
 summary(training$rad)
 ```
 
-The `qqplot` below confirms that this variable does not follow a normal distribution. 
+The `qqplot` below confirms that this variable does not follow a normal distribution. TODO: Make this a binary variable +/- the median.
 
 ```{r echo=F}
 qqnorm(training$rad)
@@ -219,7 +219,7 @@ ggplot(training, aes(x=indus))+
 summary(training$indus)
 ```
 
-The `qqplot` below confirms that this variable does not follow a normal distribution. 
+The `qqplot` below confirms that this variable does not follow a normal distribution. TODO: maybe this could be a bifucated variable too. See the two different normal-ish distributions?
 
 ```{r echo=F}
 qqnorm(training$indus)
@@ -260,7 +260,7 @@ data %>% slice(1:5) %>% kable() %>% kable_styling()
 
 
 
-We can fix this with a Box-Cox transformation, using the `forecast` package in R. 
+We can fix this with a Box-Cox transformation, using the `forecast` package in R. NOTE: Nox looks pretty good. The others definitely need to be transformed in some other way (or not at all), since the results are pretty not-normal. 
 
 ```{r}
 data2 <- data
