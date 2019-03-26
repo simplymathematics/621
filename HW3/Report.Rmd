@@ -49,6 +49,7 @@ require(tidyr)
 require(randomForest)
 require(forecast)
 require(olsrr)
+require(boot)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
@@ -145,11 +146,16 @@ We verified our assumptions above using 1000 random forests. The `nox`,  `rad`, 
 
 In the exploration section, we identified that there were no missing values in the dataset would affect the outcome of our model. However, we must ensure our predictor variables meet all major binary logistical regression assumptions.
 
+The assumptions we are concerned with in this section are: 
+
+1. Multicollinearity amongst predictor variables
+2. The linear relationship between predictor variables their log odds.  
+
 In the following section, we will prepare and transform our variables and ensure they comply with all neccessary assuptions for our model:
 
 ## Multicollinearity
 
-Using variance inflation factors (VIF), we can test our model for multicollinearity. The `rad` and `tax` variables show high multicollinearity. Both variables should not be used together in our model as the standard error for both exceeds 2 times the amount then if these variables were not related. 
+We saw some correlation between our predictor variables in our exploritory correlation plots. We can test this correlation using variance inflation factors (VIF) to ensure our model is not affected by multicollinearity. 
 
 ```{r echo=F}
 lm <- lm(target~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+lstat+medv, data=training) 
@@ -158,10 +164,23 @@ high_mc <- vif %>% filter(VIF > 5) %>% mutate(Standard_Error = sqrt(VIF))
 high_mc
 ```
 
+This test shows us that the `rad` and `tax` variables have high multicollinearity above 5. Both variables should not be used together in our model as the standard error for both exceeds 2 times the amount then if these variables were not related. 
+
+## Log Odds 
+
+```{r}
+fit_glm <- glm(target~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+lstat+medv, data = training, family = binomial(link = "log")) 
+
+for_pred <- predict(fit_glm, type = "terms", se.fit= T)
+```
+
+
 
 ### Log Transformations
 
 We applied log transformations to normalize the skewness of the `age` and `lstat` variables. 
+
+
 
 ```{r}
 log_df <- training
@@ -174,22 +193,6 @@ log_df %>% select(age, lstat) %>%
   geom_histogram(bins = 10) + 
   facet_wrap(~key, ncol = 2)
 ```
-
-
-2. `dis`
-
-4. `zn`
-
-
-
-## Variable Exploration 
-
-
-2. `nox`
-2. `rad` 
-3. `indus`
-4. `tax`
-
 
 
 ### `nox` variable
@@ -318,7 +321,6 @@ sapply(data2, qqnorm)
 
 
 # Build Models
-
 - [ ] 3 binary logistic models
 - [ ] forward, stepwise, random forest, etc
 - [ ] Inferences
