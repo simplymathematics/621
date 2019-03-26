@@ -161,7 +161,7 @@ We saw some correlation between our predictor variables in our exploritory corre
 lm <- lm(target~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+lstat+medv, data=training) 
 vif <- ols_vif_tol(lm)
 high_mc <- vif %>% filter(VIF > 5) %>% mutate(Standard_Error = sqrt(VIF))
-high_mc
+kable(high_mc) %>% kable_styling()
 ```
 
 This test shows us that the `rad` and `tax` variables have high multicollinearity above 5. Both variables should not be used together as is in our model. The above table shows that as the standard error for both exceeds 2 times the amount then if these variables were not related. 
@@ -174,13 +174,13 @@ training2
 
 lm <- lm(target~zn+indus+chas+nox+rm+age+dis+bin_rad+tax+ptratio+lstat+medv, data=training2) 
 vif <- ols_vif_tol(lm)
-vif
+kable(vif) %>% kable_styling()
 ```
 Through this change, the `tax` and `rad` variables are no longer affected by multicollinearity
 
 ## Log Transformations
 
-While logistic modeling does not require normalized data, the `age` and `lstat` variables we significantly skewed. We applied log transformations to both these variables to increase their applicability in our model.  
+While logistic modeling does not require normalized data, we found that the `age` and `lstat` variables were significantly skewed. We applied log transformations to both these variables to increase their applicability in our model.  
 
 ```{r}
 ## stored variables in new dataframe instead of replacing. replace transformed variabled in dataframe once approved by group. 
