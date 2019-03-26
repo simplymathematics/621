@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018/W32TeX) (preloaded format=pdflatex 2019.3.13)  26 MAR 2019 12:44
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018/W32TeX) (preloaded format=pdflatex 2019.3.13)  26 MAR 2019 18:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -853,7 +853,7 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 2.
 (c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for T1+lmtt on input line 10.
+LaTeX Font Info:    Try loading font information for T1+lmtt on input line 14.
 (c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ))
@@ -865,340 +865,418 @@ File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 {c:/Users/15082/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdfte
 x.map}]
 
-Package xcolor Warning: Incompatible color definition on input line 216.
+Package xcolor Warning: Incompatible color definition on input line 215.
 
-LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 218
+LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 217
 .
 (c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
 File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 220.
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 219.
 
-Package xcolor Warning: Incompatible color definition on input line 227.
-
-
-Package xcolor Warning: Incompatible color definition on input line 227.
+Package xcolor Warning: Incompatible color definition on input line 228.
 
 
-Overfull \hbox (5.89294pt too wide) in paragraph at lines 249--249
+Package xcolor Warning: Incompatible color definition on input line 228.
+
+
+Overfull \hbox (5.89294pt too wide) in paragraph at lines 250--250
  []\T1/lmr/m/n/10 ptratio|
  []
 
 
-Overfull \hbox (2.0042pt too wide) in paragraph at lines 249--249
+Overfull \hbox (2.0042pt too wide) in paragraph at lines 250--250
  []\T1/lmr/m/n/10 target|
  []
 
 
-Overfull \hbox (3.64276pt too wide) in paragraph at lines 249--249
+Overfull \hbox (3.64276pt too wide) in paragraph at lines 250--250
  []\T1/lmr/m/n/10 2.0459|
  []
 
 
-Overfull \hbox (3.64276pt too wide) in paragraph at lines 249--249
+Overfull \hbox (3.64276pt too wide) in paragraph at lines 250--250
  []\T1/lmr/m/n/10 1.3216|
  []
 
 
-Overfull \hbox (3.64276pt too wide) in paragraph at lines 249--249
+Overfull \hbox (3.64276pt too wide) in paragraph at lines 250--250
  []\T1/lmr/m/n/10 1.9784|
  []
 
 
-Overfull \hbox (3.64276pt too wide) in paragraph at lines 249--249
+Overfull \hbox (3.64276pt too wide) in paragraph at lines 250--250
  []\T1/lmr/m/n/10 7.0355|
  []
 
 
-Overfull \hbox (3.64276pt too wide) in paragraph at lines 249--249
+Overfull \hbox (3.64276pt too wide) in paragraph at lines 250--250
  []\T1/lmr/m/n/10 2.7006|
  []
 
-[2]
-<Report_files/figure-latex/unnamed-chunk-5-1.pdf, id=107, 469.755pt x 325.215pt
->
-File: Report_files/figure-latex/unnamed-chunk-5-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-5-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-5-1.pdf  used 
-on input line 292.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 292--294
-[][]
- []
-
-
-Package xcolor Warning: Incompatible color definition on input line 298.
-
-
-Package xcolor Warning: Incompatible color definition on input line 305.
-
-
-Package xcolor Warning: Incompatible color definition on input line 305.
-
-<Report_files/figure-latex/unnamed-chunk-6-1.pdf, id=108, 469.755pt x 722.7pt>
-File: Report_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-6-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-6-1.pdf  used 
-on input line 307.
-(pdftex.def)             Requested size: 422.78276pt x 650.43501pt.
-[3 <./Report_files/figure-latex/unnamed-chunk-5-1.pdf>] [4 <./Report_files/figu
-re-latex/unnamed-chunk-6-1.pdf>]
-<Report_files/figure-latex/unnamed-chunk-7-1.pdf, id=131, 469.755pt x 325.215pt
->
-File: Report_files/figure-latex/unnamed-chunk-7-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-7-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-7-1.pdf  used 
-on input line 319.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 319--323
-[][]
- []
-
-<Report_files/figure-latex/unnamed-chunk-8-1.pdf, id=132, 469.755pt x 325.215pt
->
-File: Report_files/figure-latex/unnamed-chunk-8-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-8-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-8-1.pdf  used 
-on input line 328.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[5 <./Report_files/figure-latex/unnamed-chunk-7-1.pdf>]
-Overfull \hbox (5.89294pt too wide) in paragraph at lines 339--339
+Overfull \hbox (5.89294pt too wide) in paragraph at lines 261--261
  []\T1/lmr/m/n/10 ptratio|
  []
 
 
-Overfull \hbox (2.0042pt too wide) in paragraph at lines 339--339
+Overfull \hbox (2.0042pt too wide) in paragraph at lines 261--261
  []\T1/lmr/m/n/10 target|
  []
 
-<Report_files/figure-latex/unnamed-chunk-10-1.pdf, id=142, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-10-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-10-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-10-1.pdf  used
- on input line 346.
+[2]
+<Report_files/figure-latex/unnamed-chunk-6-1.pdf, id=107, 469.755pt x 325.215pt
+>
+File: Report_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/unnamed-chunk-6-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-6-1.pdf  used 
+on input line 307.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[6 <./Report_files/figure-latex/unnamed-chunk-8-1.pdf>]
-<Report_files/figure-latex/unnamed-chunk-11-1.pdf, id=153, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-11-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-11-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-11-1.pdf  used
- on input line 387.
+
+Package xcolor Warning: Incompatible color definition on input line 314.
+
+
+Package xcolor Warning: Incompatible color definition on input line 321.
+
+
+Package xcolor Warning: Incompatible color definition on input line 321.
+
+
+Package xcolor Warning: Incompatible color definition on input line 321.
+
+[3 <./Report_files/figure-latex/unnamed-chunk-6-1.pdf>]
+
+Package xcolor Warning: Incompatible color definition on input line 321.
+
+
+Package xcolor Warning: Incompatible color definition on input line 321.
+
+<Report_files/figure-latex/unnamed-chunk-7-1.pdf, id=117, 469.755pt x 722.7pt>
+File: Report_files/figure-latex/unnamed-chunk-7-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/unnamed-chunk-7-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-7-1.pdf  used 
+on input line 323.
+(pdftex.def)             Requested size: 422.78276pt x 650.43501pt.
+[4] [5 <./Report_files/figure-latex/unnamed-chunk-7-1.pdf>]
+<Report_files/figure-latex/unnamed-chunk-8-1.pdf, id=135, 469.755pt x 325.215pt
+>
+File: Report_files/figure-latex/unnamed-chunk-8-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/unnamed-chunk-8-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-8-1.pdf  used 
+on input line 335.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[7 <./Report_files/figure-latex/unnamed-chunk-10-1.pdf>]
-<Report_files/figure-latex/unnamed-chunk-12-1.pdf, id=169, 469.755pt x 325.215p
+<Report_files/figure-latex/unnamed-chunk-9-1.pdf, id=136, 469.755pt x 325.215pt
+>
+File: Report_files/figure-latex/unnamed-chunk-9-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/unnamed-chunk-9-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-9-1.pdf  used 
+on input line 340.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+[6 <./Report_files/figure-latex/unnamed-chunk-8-1.pdf>] [7 <./Report_files/figu
+re-latex/unnamed-chunk-9-1.pdf>]
+Overfull \hbox (15.94833pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 Variables|  
+ []
+
+
+Overfull \hbox (5.89294pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 ptratio|  
+ []
+
+
+Overfull \hbox (17.8371pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 Tolerance|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.4137525|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.2483377|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.9221830|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.2210512|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.4298121|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.3213639|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.2354194|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.5836388|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.2531428|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.4765876|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.2799084|  
+ []
+
+
+Overfull \hbox (18.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 0.2775283|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 2.416904|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 4.026775|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.084383|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 4.523839|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 2.326598|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 3.111737|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 4.247738|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.713388|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 3.950339|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 2.098250|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 3.572597|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 3.603236|  
+ []
+
+
+Overfull \hbox (46.94818pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 Standard_Error|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.554639|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 2.006683|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.041337|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 2.126932|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.525319|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.764012|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 2.061004|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.308965|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.987546|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.448534|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.890131|  
+ []
+
+
+Overfull \hbox (13.64276pt too wide) in paragraph at lines 405--405
+[]\T1/lmr/m/n/10 1.898219|  
+ []
+
+
+Package xcolor Warning: Incompatible color definition on input line 407.
+
+
+Package xcolor Warning: Incompatible color definition on input line 411.
+
+
+Package xcolor Warning: Incompatible color definition on input line 411.
+
+<Report_files/figure-latex/unnamed-chunk-12-1.pdf, id=159, 469.755pt x 325.215p
 t>
 File: Report_files/figure-latex/unnamed-chunk-12-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-12-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-12-1.pdf  used
- on input line 397.
+ on input line 413.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Package xcolor Warning: Incompatible color definition on input line 399.
+Package xcolor Warning: Incompatible color definition on input line 425.
 
-[8 <./Report_files/figure-latex/unnamed-chunk-11-1.pdf>]
+[8 <./Report_files/figure-latex/unnamed-chunk-12-1.pdf>]
 
-Package xcolor Warning: Incompatible color definition on input line 405.
+Package xcolor Warning: Incompatible color definition on input line 439.
 
 
-Package xcolor Warning: Incompatible color definition on input line 405.
+Package xcolor Warning: Incompatible color definition on input line 439.
 
-LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 407.
-<Report_files/figure-latex/unnamed-chunk-14-1.pdf, id=182, 469.755pt x 325.215p
+<Report_files/figure-latex/unnamed-chunk-13-1.pdf, id=169, 469.755pt x 325.215p
 t>
-File: Report_files/figure-latex/unnamed-chunk-14-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-14-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-14-1.pdf  used
- on input line 416.
+File: Report_files/figure-latex/unnamed-chunk-13-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/unnamed-chunk-13-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-13-1.pdf  used
+ on input line 441.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[9 <./Report_files/figure-latex/unnamed-chunk-12-1.pdf>]
-<Report_files/figure-latex/unnamed-chunk-15-1.pdf, id=193, 469.755pt x 325.215p
+<Report_files/figure-latex/unnamed-chunk-15-1.pdf, id=170, 469.755pt x 325.215p
 t>
 File: Report_files/figure-latex/unnamed-chunk-15-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-15-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-15-1.pdf  used
- on input line 426.
+ on input line 452.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[10 <./Report_files/figure-latex/unnamed-chunk-14-1.pdf>]
-<Report_files/figure-latex/unnamed-chunk-16-1.pdf, id=206, 469.755pt x 325.215p
+
+Overfull \hbox (206.05475pt too wide) in paragraph at lines 451--453
+[]\T1/lmr/m/n/10 Our new vari-able for ptra-tio now looks like this: [] 
+ []
+
+[9 <./Report_files/figure-latex/unnamed-chunk-13-1.pdf>]
+<Report_files/figure-latex/unnamed-chunk-16-1.pdf, id=181, 469.755pt x 325.215p
 t>
 File: Report_files/figure-latex/unnamed-chunk-16-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-16-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-16-1.pdf  used
- on input line 435.
+ on input line 461.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[11 <./Report_files/figure-latex/unnamed-chunk-15-1.pdf>]
-<Report_files/figure-latex/unnamed-chunk-17-1.pdf, id=217, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-17-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-17-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-17-1.pdf  used
- on input line 446.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[12 <./Report_files/figure-latex/unnamed-chunk-16-1.pdf>]
-<Report_files/figure-latex/unnamed-chunk-18-1.pdf, id=230, 469.755pt x 325.215p
+[10 <./Report_files/figure-latex/unnamed-chunk-15-1.pdf>]
+<Report_files/figure-latex/unnamed-chunk-18-1.pdf, id=192, 469.755pt x 325.215p
 t>
 File: Report_files/figure-latex/unnamed-chunk-18-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-18-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-18-1.pdf  used
- on input line 456.
+ on input line 470.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[13 <./Report_files/figure-latex/unnamed-chunk-17-1.pdf>]
-<Report_files/figure-latex/unnamed-chunk-19-1.pdf, id=242, 469.755pt x 325.215p
+[11 <./Report_files/figure-latex/unnamed-chunk-16-1.pdf>]
+LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 472.
+<Report_files/figure-latex/unnamed-chunk-19-1.pdf, id=205, 469.755pt x 325.215p
 t>
 File: Report_files/figure-latex/unnamed-chunk-19-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-19-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-19-1.pdf  used
- on input line 466.
+ on input line 480.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[14 <./Report_files/figure-latex/unnamed-chunk-18-1.pdf>]
-
-Package xcolor Warning: Incompatible color definition on input line 472.
-
-
-Package xcolor Warning: Incompatible color definition on input line 477.
-
-
-Package xcolor Warning: Incompatible color definition on input line 477.
-
-
-Package xcolor Warning: Incompatible color definition on input line 500.
-
-
-Package xcolor Warning: Incompatible color definition on input line 509.
-
-
-Package xcolor Warning: Incompatible color definition on input line 509.
-
-<Report_files/figure-latex/unnamed-chunk-21-1.pdf, id=255, 469.755pt x 325.215p
+[12 <./Report_files/figure-latex/unnamed-chunk-18-1.pdf>]
+<Report_files/figure-latex/unnamed-chunk-20-1.pdf, id=215, 469.755pt x 325.215p
 t>
-File: Report_files/figure-latex/unnamed-chunk-21-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-21-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-21-1.pdf  used
- on input line 511.
+File: Report_files/figure-latex/unnamed-chunk-20-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/unnamed-chunk-20-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-20-1.pdf  used
+ on input line 490.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<Report_files/figure-latex/unnamed-chunk-21-2.pdf, id=256, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-21-2.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-21-2.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-21-2.pdf  used
- on input line 512.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<Report_files/figure-latex/unnamed-chunk-21-3.pdf, id=257, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-21-3.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-21-3.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-21-3.pdf  used
- on input line 513.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<Report_files/figure-latex/unnamed-chunk-21-4.pdf, id=258, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-21-4.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-21-4.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-21-4.pdf  used
- on input line 514.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 511--515
-[][]
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 511--515
-[]
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 511--515
-[]
- []
-
-[15 <./Report_files/figure-latex/unnamed-chunk-19-1.pdf>] [16 <./Report_files/f
-igure-latex/unnamed-chunk-21-1.pdf>] [17 <./Report_files/figure-latex/unnamed-c
-hunk-21-2.pdf>] [18 <./Report_files/figure-latex/unnamed-chunk-21-3.pdf>]
-
-Package xcolor Warning: Incompatible color definition on input line 526.
-
-
-Package xcolor Warning: Incompatible color definition on input line 530.
-
-
-Package xcolor Warning: Incompatible color definition on input line 530.
-
-<Report_files/figure-latex/unnamed-chunk-21-5.pdf, id=300, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-21-5.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-21-5.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-21-5.pdf  used
- on input line 532.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<Report_files/figure-latex/unnamed-chunk-21-6.pdf, id=301, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-21-6.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-21-6.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-21-6.pdf  used
- on input line 533.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<Report_files/figure-latex/unnamed-chunk-21-7.pdf, id=302, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-21-7.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-21-7.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-21-7.pdf  used
- on input line 534.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<Report_files/figure-latex/unnamed-chunk-21-8.pdf, id=303, 469.755pt x 325.215p
-t>
-File: Report_files/figure-latex/unnamed-chunk-21-8.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-21-8.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-21-8.pdf  used
- on input line 535.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 532--536
-[][]
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 532--536
-[]
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 532--536
-[]
- []
-
-[19 <./Report_files/figure-latex/unnamed-chunk-21-4.pdf>] [20 <./Report_files/f
-igure-latex/unnamed-chunk-21-5.pdf>] [21 <./Report_files/figure-latex/unnamed-c
-hunk-21-6.pdf>] [22 <./Report_files/figure-latex/unnamed-chunk-21-7.pdf>]
-LaTeX Font Info:    Try loading font information for TS1+lmr on input line 548.
+[13 <./Report_files/figure-latex/unnamed-chunk-19-1.pdf>]
+LaTeX Font Info:    Try loading font information for TS1+lmr on input line 497.
 
 (c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 575.
-[23 <./Report_files/figure-latex/unnamed-chunk-21-8.pdf>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 575.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 524.
+[14 <./Report_files/figure-latex/unnamed-chunk-20-1.pdf>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 524.
 (./Report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 575.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 575.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 524.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 524.
 Package rerunfilecheck Info: File `Report.out' has not changed.
-(rerunfilecheck)             Checksum: D18214E463F284A8D572C28FFBAD054B;1583.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 575.
+(rerunfilecheck)             Checksum: E2AC941CDE78C4CAE67D60739DEBA6FB;1623.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 524.
  ) 
 Here is how much of TeX's memory you used:
- 12776 strings out of 494562
- 185898 string characters out of 6176064
- 269379 words of memory out of 5000000
- 16164 multiletter control sequences out of 15000+600000
+ 12727 strings out of 494562
+ 183452 string characters out of 6176064
+ 272394 words of memory out of 5000000
+ 16125 multiletter control sequences out of 15000+600000
  44271 words of font info for 47 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 28i,13n,35p,319b,408s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 28i,13n,35p,281b,408s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.
 enc}{c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec
 .enc}<c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/l
@@ -1210,10 +1288,10 @@ e1/public/lm/lmr17.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/texmf-dist/fonts
 fonts/type1/public/lm/lmtk10.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/texmf-
 dist/fonts/type1/public/lm/lmtt10.pfb><c:/Users/15082/AppData/Roaming/TinyTeX/t
 exmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on Report.pdf (23 pages, 596120 bytes).
+Output written on Report.pdf (14 pages, 354961 bytes).
 PDF statistics:
- 405 PDF objects out of 1000 (max. 8388607)
- 326 compressed objects within 4 object streams
- 58 named destinations out of 1000 (max. 500000)
- 218 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 287 PDF objects out of 1000 (max. 8388607)
+ 238 compressed objects within 3 object streams
+ 48 named destinations out of 1000 (max. 500000)
+ 168 words of extra memory for PDF output out of 10000 (max. 10000000)
 
