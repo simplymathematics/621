@@ -164,25 +164,26 @@ high_mc <- vif %>% filter(VIF > 5) %>% mutate(Standard_Error = sqrt(VIF))
 high_mc
 ```
 
-This test shows us that the `rad` and `tax` variables have high multicollinearity above 5. Both variables should not be used together in our model as the standard error for both exceeds 2 times the amount then if these variables were not related. 
+This test shows us that the `rad` and `tax` variables have high multicollinearity above 5. Both variables should not be used together as is in our model. The above table shows that as the standard error for both exceeds 2 times the amount then if these variables were not related. 
 
-## Log Odds 
+Rad is an index variable that represents accessibility to radial highways. We choose to mutate this data into a binary variable using the median value, 5.  
 
-```{r}
-fit_glm <- glm(target~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+lstat+medv, data = training, family = binomial(link = "log")) 
+```{r echo=F}
+training2<- mutate(training, bin_rad = if_else(rad < median(rad), "0", "1")) %>% select(-rad)
+training2
 
-for_pred <- predict(fit_glm, type = "terms", se.fit= T)
+lm <- lm(target~zn+indus+chas+nox+rm+age+dis+bin_rad+tax+ptratio+lstat+medv, data=training2) 
+vif <- ols_vif_tol(lm)
+vif
 ```
+Through this change, the `tax` and `rad` variables are no longer affected by multicollinearity
 
+## Log Transformations
 
-
-### Log Transformations
-
-We applied log transformations to normalize the skewness of the `age` and `lstat` variables. 
-
-
+While logistic modeling does not require normalized data, the `age` and `lstat` variables we significantly skewed. We applied log transformations to both these variables to increase their applicability in our model.  
 
 ```{r}
+## stored variables in new dataframe instead of replacing. replace transformed variabled in dataframe once approved by group. 
 log_df <- training
 log_df$age <- log(training2$age)
 log_df$lstat <- log(training2$lstat)
@@ -228,27 +229,7 @@ stud_teach_ratio <- cut(stud_teach_ratio, breaks = 3, labels=c("Small", "Medium"
 
 ## `rad`
 
-This an index variable that represents accessibility to radial highways. The plots below show the `rad` data is bimodal and centered around 5. This data almost follows a normal distribution, however there is an extreme outlier that skews the mean to the right. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
-```{r echo=F}
-ggplot(training, aes(x=rad))+
-  geom_histogram(aes(y=..density..), colour="black", fill="white")+
-  geom_density(alpha=.2, fill="lightgrey")+
-  geom_vline(aes(xintercept=median(rad, na.rm=T)),  
-               color="red", linetype="dashed", size=1) + 
-  geom_vline(aes(xintercept=mean(rad, na.rm=T)),  
-               color="blue", linetype="dashed", size=1)
-  
-
-summary(training$rad)
-```
-
-The `qqplot` below confirms that this variable does not follow a normal distribution. TODO: Make this a binary variable +/- the median.
-
-```{r echo=F}
-qqnorm(training$rad)
-qqline(training$rad)
-```
 
 ## `indus` 
 
