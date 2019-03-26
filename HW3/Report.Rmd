@@ -33,7 +33,7 @@ In this homework assignment, you will explore, analyze and model a data set cont
 
 ## Objective 
 
-Your objective is to build a binary logistic regression model on the training data set to predict whether the neighborhood will be at risk for high crime levels. You will provide classifications and probabilities for the evaluation data set using your binary logistic regression model. You can only use the variables given to you (or variables that you derive from the variables provided). Below is a short description of the variables of interest in the data set: 
+Your objective is to build a binary logistic regression model on the training data set to predict whether the neighborhood will be at risk for high crime levels. You will provide classifications and probabilities for the evaluation data set using your binary logistic regression model. You can only use the variables given to you (or variables that you derive from the variables provided). 
 
 ## Dependencies
 
@@ -48,6 +48,7 @@ require(dplyr)
 require(tidyr)
 require(randomForest)
 require(forecast)
+require(olsrr)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
@@ -75,6 +76,14 @@ test <- as.data.frame(read.csv("crime-evaluation-data_modified.csv"))
 training %>% slice(1:5) %>% kable() %>% kable_styling()
 ```
 
+We can explore how many `NAs` are in each column to see if we need to impute any of the variables:
+
+```{r echo=FALSE}
+apply(training, 2, function(x) length(!is.na(x))) %>% t() %>% kable() %>% kable_styling()
+```
+
+As we can see, each data vector has the same number of entries, 466. Thus, imputation will not be necessary.
+
 ## Summary Statistics 
 
 We then calculated the mean and standard deviation for each data vector: 
@@ -97,6 +106,7 @@ ggplot(explore, aes(x = row.names(explore), y = means))+
   theme(panel.background = element_blank()) + 
   geom_errorbar(aes(ymin = means - sds, ymax = means + sds))
 ```
+
 ## Histogram 
 
 The following histograms help visualize the spread and skewness of the raw data. 
@@ -116,22 +126,8 @@ We can see our correlation matrix below. A dark blue circle represents a strong 
 results <- cor(training, method = 'pearson', use = 'complete.obs')
 corrplot::corrplot(results, method = 'circle')
 ```
-**EDIT QUESTION: SEEING AS THERE ARE NO NA VALUES, CAN WE JUST MENTION THAT FIRST THEN DO ONE CORRPLOT? DOING TWO FOR MISSING ROW VALUES SEEMS REDUNDANT -jm**
 
-We can compare the plot above to the one below, which includes rows without all of the data present. The availability of data does not significantly affect the results.
-
-```{r, echo= FALSE}
-results <- cor(training, method = 'pearson')
-corrplot::corrplot(results, method = 'circle')
-```
-
-We can explore how many `NAs` are in each column to see if we need to impute any of the variables:
-
-```{r echo=FALSE}
-apply(training, 2, function(x) length(!is.na(x))) %>% t() %>% kable() %>% kable_styling()
-```
-
-As we can see, each data vector has the same number of entries, 466. Imputation will not be necessary. Finally, we can use the `randomforest` package to verify our assumptions from the correlation plot.
+Finally, we can use the `randomforest` package to verify our assumptions from the correlation plot.
 
 ```{r, echo = FALSE}
 training2 <- training
@@ -147,17 +143,52 @@ We verified our assumptions above using 1000 random forests. The `nox`,  `rad`, 
 
 # Data Preparation
 
-In the exploration section, we identified that there were no missing values in the dataset would affect the outcome of our model. We additionally found that the following four variables had the strongest correlation with our target goal:
+In the exploration section, we identified that there were no missing values in the dataset would affect the outcome of our model. However, we must ensure our predictor variables meet all major binary logistical regression assumptions.
 
-1. `nox`
-2. `rad` 
-3. `indus`
-4. `tax`
+In the following section, we will prepare and transform our variables and ensure they comply with all neccessary assuptions for our model:
 
-In the following section, we will analyze and transform these variables to use in the development of our model: 
+## Multicollinearity
+
+Using variance inflation factors (VIF), we can test our model for multicollinearity. The `rad` and `tax` variables show high multicollinearity. Both variables should not be used together in our model as the standard error for both exceeds 2 times the amount then if these variables were not related. 
+
+```{r echo=F}
+lm <- lm(target~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+lstat+medv, data=training) 
+vif <- ols_vif_tol(lm)
+high_mc <- vif %>% filter(VIF > 5) %>% mutate(Standard_Error = sqrt(VIF))
+high_mc
+```
+
+
+### Log Transformations
+
+We applied log transformations to normalize the skewness of the `age` and `lstat` variables. 
+
+```{r}
+log_df <- training
+log_df$age <- log(training2$age)
+log_df$lstat <- log(training2$lstat)
+
+log_df %>% select(age, lstat) %>% 
+  gather() %>% 
+  ggplot(mapping = aes(x = value)) + 
+  geom_histogram(bins = 10) + 
+  facet_wrap(~key, ncol = 2)
+```
+
+
+2. `dis`
+
+4. `zn`
+
+
 
 ## Variable Exploration 
 
+
+2. `nox`
+2. `rad` 
+3. `indus`
+4. `tax`
 
 
 
