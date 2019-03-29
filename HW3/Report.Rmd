@@ -33,7 +33,7 @@ In this homework assignment, you will explore, analyze and model a data set cont
 
 ## Objective 
 
-Your objective is to build a binary logistic regression model on the training data set to predict whether the neighborhood will be at risk for high crime levels. You will provide classifications and probabilities for the evaluation data set using your binary logistic regression model. You can only use the variables given to you (or variables that you derive from the variables provided). Below is a short description of the variables of interest in the data set: 
+Your objective is to build a binary logistic regression model on the training data set to predict whether the neighborhood will be at risk for high crime levels. You will provide classifications and probabilities for the evaluation data set using your binary logistic regression model. You can only use the variables given to you (or variables that you derive from the variables provided). 
 
 ## Dependencies
 
@@ -48,6 +48,8 @@ require(dplyr)
 require(tidyr)
 require(randomForest)
 require(forecast)
+require(olsrr)
+require(boot)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
@@ -75,6 +77,14 @@ test <- as.data.frame(read.csv("crime-evaluation-data_modified.csv"))
 training %>% slice(1:5) %>% kable() %>% kable_styling()
 ```
 
+We can explore how many `NAs` are in each column to see if we need to impute any of the variables:
+
+```{r echo=FALSE}
+apply(training, 2, function(x) length(!is.na(x))) %>% t() %>% kable() %>% kable_styling()
+```
+
+As we can see, each data vector has the same number of entries, 466. Thus, imputation will not be necessary.
+
 ## Summary Statistics 
 
 We then calculated the mean and standard deviation for each data vector: 
@@ -98,6 +108,17 @@ ggplot(explore, aes(x = row.names(explore), y = means))+
   geom_errorbar(aes(ymin = means - sds, ymax = means + sds))
 ```
 
+## Histogram 
+
+The following histograms help visualize the spread and skewness of the raw data. 
+
+```{r fig.height=10}
+ggplot(data = gather(training), mapping = aes(x = value)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white")+
+  geom_density(alpha=.2, fill="lightgrey")+
+  facet_wrap(~key, ncol = 2, scales = 'free') 
+```
+
 ## Correlation  
 
 We can see our correlation matrix below. A dark blue circle represents a strong positive relationship and a dark red circle represents a strong negative relationship between two variables. We can see that `indus`, `nox`, `target`, and `dis` have the most colinearity. Likewise, these vectors are the best predictors for the target value. Note that this plot only includes rows tha have data in each column.
@@ -106,22 +127,8 @@ We can see our correlation matrix below. A dark blue circle represents a strong 
 results <- cor(training, method = 'pearson', use = 'complete.obs')
 corrplot::corrplot(results, method = 'circle')
 ```
-**EDIT QUESTION: SEEING AS THERE ARE NO NA VALUES, CAN WE JUST MENTION THAT FIRST THEN DO ONE CORRPLOT? DOING TWO FOR MISSING ROW VALUES SEEMS REDUNDANT**
 
-We can compare the plot above to the one below, which includes rows without all of the data present. The availability of data does not significantly affect the results.
-
-```{r, echo= FALSE}
-results <- cor(training, method = 'pearson')
-corrplot::corrplot(results, method = 'circle')
-```
-
-We can explore how many `NAs` are in each column to see if we need to impute any of the variables:
-
-```{r echo=FALSE}
-apply(training, 2, function(x) length(!is.na(x))) %>% t() %>% kable() %>% kable_styling()
-```
-
-As we can see, each data vector has the same number of entries, 466. Imputation will not be necessary. Finally, we can use the `randomforest` package to verify our assumptions from the correlation plot.
+Finally, we can use the `randomforest` package to verify our assumptions from the correlation plot.
 
 ```{r, echo = FALSE}
 training2 <- training
@@ -137,73 +144,69 @@ We verified our assumptions above using 1000 random forests. The `nox`,  `rad`, 
 
 # Data Preparation
 
-In the exploration section, we identified that there were no missing values in the dataset would affect the outcome of our model. We additionally found that the following four variables had the strongest correlation with our target goal:
+In the following section, we will prepare and transform our variables for our model: 
 
-1. `nox`
-2. `rad` 
-3. `indus`
-4. `tax`
+## Transformations for Multicollinearity
 
-In the following section, we will analyze and transform these variables to use in the development of our model: 
-
-## Variable Exploration 
-
-### `nox` variable
-
-This variable represents nitrogen oxides concentration (parts per 10 million). The plots below show the `nox` data is multimodal, skewed right, and centered around 0.55. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
+We saw some correlation between our predictor variables in our exploritory correlation plots. We can test this correlation using variance inflation factors (VIF) to ensure our model is not affected by multicollinearity. 
 
 ```{r echo=F}
-ggplot(training, aes(x=nox))+
-  geom_histogram(aes(y=..density..), colour="black", fill="white")+
-  geom_density(alpha=.2, fill="lightgrey")+
-  geom_vline(aes(xintercept=median(nox, na.rm=T)),  
-               color="red", linetype="dashed", size=1) + 
-  geom_vline(aes(xintercept=mean(nox, na.rm=T)),  
-               color="blue", linetype="dashed", size=1)
-  
-
-summary(training$nox)
+lm <- lm(target~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+lstat+medv, data=training) 
+vif <- ols_vif_tol(lm)
+high_mc <- vif %>% filter(VIF > 5) %>% mutate(Standard_Error = sqrt(VIF))
+kable(high_mc) %>% kable_styling()
 ```
 
-The `qqplot` below confirms that this variable does not follow a normal distribution. 
+This test shows us that the `rad` and `tax` variables have high multicollinearity above 5. Both variables should not be used together, without transformation in our model. The above table shows that as the standard error for both exceeds 2 times the amount then if these variables were not related. 
+
+Rad is an index variable that represents accessibility to radial highways. We choose to bifucate this data using the median value, 5.  
 
 ```{r echo=F}
-qqnorm(training$nox)
-qqline(training$nox)
-```
+training2<- mutate(training, rad = if_else(rad < median(rad), 0, 1)) 
 
+lm <- lm(target~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+lstat+medv, data=training2) 
+vif <- ols_vif_tol(lm) %>% mutate(Standard_Error = sqrt(VIF)) %>% t()
+kable(vif) %>% kable_styling()
+```
 
 ```{r}
-stud_teach_ratio <- training$ptratio
-
-stud_teach_ratio <- cut(stud_teach_ratio, breaks = 3, labels=c("Small", "Medium", "Large"))
+ggplot(training2, aes(x=rad))+geom_bar()
 ```
 
-## `rad`
+Through this change, the `tax` and `rad` variables are no longer affected by multicollinearity.
 
-This an index variable that represents accessibility to radial highways. The plots below show the `rad` data is bimodal and centered around 5. This data almost follows a normal distribution, however there is an extreme outlier that skews the mean to the right. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
+
+## Log Transformations
+
+
+While logistic modeling does not require normalized data, we choose to apply log transformations to the `age`,  `lstat`, and `tax` variables.  
+
+```{r fig.height=10}
+training2 <- training2 %>%
+   mutate_at(.vars = vars(age, lstat, tax), .funs = log)
+```
+
+This transformation helps center the `age` and normalize the `lstat` and `tax` variables. 
+
+## New Variables
+
+We choose to create several variables from our initial dataset. 
+
+### `ptratio`
+
+
+We first changed `ptratio`, a pupil-teacher ratio measurement, into a categorial variable. In the new variable, 0 represents small, 1 represents medium, and 3 represents large ratios. 
 
 ```{r echo=F}
-ggplot(training, aes(x=rad))+
-  geom_histogram(aes(y=..density..), colour="black", fill="white")+
-  geom_density(alpha=.2, fill="lightgrey")+
-  geom_vline(aes(xintercept=median(rad, na.rm=T)),  
-               color="red", linetype="dashed", size=1) + 
-  geom_vline(aes(xintercept=mean(rad, na.rm=T)),  
-               color="blue", linetype="dashed", size=1)
-  
-
-summary(training$rad)
+training2<- mutate(training2, ptratio = as.numeric(cut(ptratio, breaks = 3, labels=c(0, 1, 3)))) 
 ```
 
-The `qqplot` below confirms that this variable does not follow a normal distribution. TODO: Make this a binary variable +/- the median.
-
+Our new variable for `ptratio` now looks like this: 
 ```{r echo=F}
-qqnorm(training$rad)
-qqline(training$rad)
+ggplot(training2, aes(x=ptratio))+geom_bar()
 ```
 
-## `indus` 
+### `indus` 
 
 This variable represents the proportion of non-retail business acres per suburb. The plots below show the `indus` data is bimodal, skewed right, and centered around 10. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
@@ -215,66 +218,29 @@ ggplot(training, aes(x=indus))+
                color="red", linetype="dashed", size=1) + 
   geom_vline(aes(xintercept=mean(indus, na.rm=T)),  
                color="blue", linetype="dashed", size=1)
-
 summary(training$indus)
 ```
 
-The `qqplot` below confirms that this variable does not follow a normal distribution. TODO: maybe this could be a bifucated variable too. See the two different normal-ish distributions?
+
+We choose to bifuncate this variable using its median value.
+
 
 ```{r echo=F}
-qqnorm(training$indus)
-qqline(training$indus)
+training2<- mutate(training2, indus = if_else(indus < median(indus), 0, 1)) 
 ```
-
-## `tax` 
-
-This variable represents full-value property-tax rate per $10,000. The values stored in this variable are significantly larger than the ones previously explored. The plots below show that the `tax` data is bimodal, skewed right, and centered around 330. The red line shows the median, whereas the blue line depicts the mean value for this variable. 
 
 ```{r echo=F}
-ggplot(training, aes(x=tax))+
-  geom_histogram(aes(y=..density..), colour="black", fill="white")+
-  geom_density(alpha=.2, fill="lightgrey")+
-  geom_vline(aes(xintercept=median(tax, na.rm=T)),  
-               color="red", linetype="dashed", size=1) + 
-  geom_vline(aes(xintercept=mean(tax, na.rm=T)),  
-               color="blue", linetype="dashed", size=1)
-
-
-summary(training$tax)
-```
-
-The `qqplot` below confirms that this variable does not follow a normal distribution. 
-
-```{r echo=F}
-qqnorm(training$tax)
-qqline(training$tax)
-```
-
-## Variable Transformation 
-
-Our goal is to transform the following data 
-```{r}
-data <-  training %>% select(nox, rad, indus, tax)
-data %>% slice(1:5) %>% kable() %>% kable_styling()
+ggplot(training2, aes(x=indus))+geom_bar()
 ```
 
 
+```{r, echo = F}
+transformed.data <- as.data.frame(training2)
+head(transformed.data)
 
-We can fix this with a Box-Cox transformation, using the `forecast` package in R. NOTE: Nox looks pretty good. The others definitely need to be transformed in some other way (or not at all), since the results are pretty not-normal. 
-
-```{r}
-data2 <- data
-transform <- function(x){
-  x <- BoxCox(x, lambda = BoxCox.lambda(x))
-}
-data2 <- as.data.frame(sapply(data, transform))
-sapply(data2, hist)
-sapply(data2, qqnorm)
 ```
-
 
 # Build Models
-
 - [ ] 3 binary logistic models
 - [ ] forward, stepwise, random forest, etc
 - [ ] Inferences
