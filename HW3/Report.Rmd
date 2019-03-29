@@ -41,15 +41,15 @@ Replication of our work requires the following packages in Rstudio:
 
 ```{r, echo = TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
 #install.packages('corrplot')
+#install.packages('randomForest')
+#install.packages('olsrr')
 
 require(ggplot2)
-require(corrplot)
 require(dplyr)
 require(tidyr)
+require(corrplot)
 require(randomForest)
-require(forecast)
 require(olsrr)
-require(boot)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
@@ -58,7 +58,7 @@ require(knitr)
 require(kableExtra)
 require(default)
 
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = T, message = T, warning = T) # change message/warning to F when finished
 
 default(kable_styling)  <- list(bootstrap_options = c("basic"), 
                                 position = "center", 
@@ -175,25 +175,27 @@ ggplot(training2, aes(x=rad))+geom_bar()
 
 Through this change, the `tax` and `rad` variables are no longer affected by multicollinearity.
 
-
 ## Log Transformations
 
-
-While logistic modeling does not require normalized data, we choose to apply log transformations to the `age`,  `lstat`, and `tax` variables.  
+While logistic modeling does not require normalized data, we choose to apply log transformations to adjust the scales for `age`,  `lstat`, and `tax` so that the variables better fit our models.  
 
 ```{r fig.height=10}
 training2 <- training2 %>%
    mutate_at(.vars = vars(age, lstat, tax), .funs = log)
+
+training2 %>% select(age, lstat,tax) %>% gather() %>% ggplot(mapping = aes(x = value)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white")+
+  geom_density(alpha=.2, fill="lightgrey")+
+  facet_wrap(~key, ncol = 2, scales = 'free') 
 ```
 
 This transformation helps center the `age` and normalize the `lstat` and `tax` variables. 
 
 ## New Variables
 
-We choose to create several variables from our initial dataset. 
+We additionally chose to create several variables from our initial dataset. 
 
 ### `ptratio`
-
 
 We first changed `ptratio`, a pupil-teacher ratio measurement, into a categorial variable. In the new variable, 0 represents small, 1 represents medium, and 3 represents large ratios. 
 
@@ -202,6 +204,7 @@ training2<- mutate(training2, ptratio = as.numeric(cut(ptratio, breaks = 3, labe
 ```
 
 Our new variable for `ptratio` now looks like this: 
+
 ```{r echo=F}
 ggplot(training2, aes(x=ptratio))+geom_bar()
 ```
@@ -218,7 +221,6 @@ ggplot(training, aes(x=indus))+
                color="red", linetype="dashed", size=1) + 
   geom_vline(aes(xintercept=mean(indus, na.rm=T)),  
                color="blue", linetype="dashed", size=1)
-summary(training$indus)
 ```
 
 
@@ -233,11 +235,11 @@ training2<- mutate(training2, indus = if_else(indus < median(indus), 0, 1))
 ggplot(training2, aes(x=indus))+geom_bar()
 ```
 
+As a result of these transformations, our data now looks like this: 
 
 ```{r, echo = F}
 transformed.data <- as.data.frame(training2)
-head(transformed.data)
-
+kable(head(transformed.data)) %>% kable_styling()
 ```
 
 # Build Models
