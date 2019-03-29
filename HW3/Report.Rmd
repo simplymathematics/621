@@ -228,6 +228,10 @@ training2<- mutate(training2, indus = if_else(indus < median(indus), 0, 1))
 ggplot(training2, aes(x=indus))+geom_bar()
 ```
 
+```{r, echo = F}
+transformed.data <- as.data.frame(training2)
+head(transformed.data)
+```
 
 # Build Models
 - [ ] 3 binary logistic models
