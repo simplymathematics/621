@@ -175,7 +175,9 @@ ggplot(training2, aes(x=rad))+geom_bar()
 
 Through this change, the `tax` and `rad` variables are no longer affected by multicollinearity.
 
+
 ## Log Transformations
+
 
 While logistic modeling does not require normalized data, we choose to apply log transformations to the `age`,  `lstat`, and `tax` variables.  
 
@@ -191,6 +193,7 @@ This transformation helps center the `age` and normalize the `lstat` and `tax` v
 We choose to create several variables from our initial dataset. 
 
 ### `ptratio`
+
 
 We first changed `ptratio`, a pupil-teacher ratio measurement, into a categorial variable. In the new variable, 0 represents small, 1 represents medium, and 3 represents large ratios. 
 
@@ -218,7 +221,9 @@ ggplot(training, aes(x=indus))+
 summary(training$indus)
 ```
 
+
 We choose to bifuncate this variable using its median value.
+
 
 ```{r echo=F}
 training2<- mutate(training2, indus = if_else(indus < median(indus), 0, 1)) 
@@ -228,9 +233,11 @@ training2<- mutate(training2, indus = if_else(indus < median(indus), 0, 1))
 ggplot(training2, aes(x=indus))+geom_bar()
 ```
 
+
 ```{r, echo = F}
 transformed.data <- as.data.frame(training2)
 head(transformed.data)
+
 ```
 
 # Build Models
