@@ -3,13 +3,13 @@ title: "HW 3"
 author: "Team 2"
 date: "April 10, 2019"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     pdf_document: default
     theme: cosmo
     toc: yes
     toc_float: yes
+  pdf_document:
+    toc: yes
 ---
 
 # Overview
@@ -242,11 +242,212 @@ transformed.data <- as.data.frame(training2)
 kable(head(transformed.data)) %>% kable_styling()
 ```
 
-# Build Models
-- [ ] 3 binary logistic models
-- [ ] forward, stepwise, random forest, etc
-- [ ] Inferences
-- [ ] Coefficients
+Build Models
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
+library(forecast)
+library(randomForest)
+library(e1071)
+library(ggplot2)
+library(cowplot)
+library(MASS)
+library(tidyverse)
+library(broom)
+library(car)
+library(caret)
+library(pscl)
+```
+
+```{r, echo = F}
+# training <- as.data.frame(read.csv("https://raw.githubusercontent.com/simplymathematics/621/master/HW3/crime-training-data_modified.csv"))
+training$target<-as.factor(training$target)
+training$chas<-as.factor(training$chas)
+```
+
+
+Spliting data set on train and test.
+
+```{r, echo = F}
+set.seed(123)
+training.samples <- training$target %>% 
+createDataPartition(p = 0.8, list = FALSE)
+train.data  <- training[training.samples, ]
+test.data <- training[-training.samples, ]
+```
+
+Confusion matrix function.
+
+```{r, echo = F}
+matrix<-function(model_name){
+        probabilities <- model_name %>% predict(test.data, type = "response")
+        predicted.classes <- ifelse(probabilities > 0.5, 1, 0)
+        confusionMatrix(as.factor(predicted.classes), as.factor(test.data$target), dnn = c("Prediction", "Reference"))
+}
+
+```
+
+MODEL 1 
+-------
+
+Basic Model
+
+```{r, echo = F}
+model_1<- step(glm(target~., data = training, family = 'binomial'), direction = 'backward')
+summary(model_1)
+matrix(model_1)
+pR2(model_1)
+```
+
+Check model_1 for the following logistic regression assumptions:
+
+1. The outcome is a binary (True)
+2. There is a linear relationship between the logit of the outcome and each predictor variables (If not, model can benefit from variables transformations)
+3. There is no influential values (extreme values or outliers) in the continuous predictors.
+4. There is no high intercorrelations (i.e. multicollinearity) among the predictors.
+
+Checking for a linear relationship between the logit of the outcome and each predictor variables
+
+```{r, echo = F}
+probabilities <- predict(model_1, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, 1, 0)
+# Select only numeric predictors
+mydata <- training %>%
+  dplyr::select_if(is.numeric) 
+predictors <- colnames(mydata)
+# Bind the logit and tidying the data for plot
+mydata <- mydata %>%
+  mutate(logit = log(probabilities/(1-probabilities))) %>%
+  gather(key = "predictors", value = "predictor.value", -logit)
+
+ggplot(mydata, aes(logit, predictor.value))+
+  geom_point(size = 0.5, alpha = 0.5) +
+  geom_smooth(method = "loess") + 
+  theme_bw() + 
+  facet_wrap(~predictors, scales = "free_y")
+
+```
+
+The relationships are not linear, model can benefit from varibles transformations.
+
+
+Checking model_1 for the presence of influencial(leverage) values 
+
+```{r, echo = F}
+plot(model_1, which = 4, id.n = 5)
+# Extract model results
+model.data <- augment(model_1) %>% 
+  mutate(index = 1:n()) 
+model.data %>% top_n(5, .cooksd)
+ggplot(model.data, aes(index, .std.resid)) + 
+  geom_point(aes(color = target), alpha = .5) +
+  theme_bw()
+model.data %>% 
+  filter(abs(.std.resid) > 3)
+```
+
+Eliminating the row with influential value.
+
+```{r, echo = F}
+training_clean <-training %>% 
+  filter(!(nox==0.464 & age==42.1))
+
+```
+
+Checking for intercorrelations.
+
+```{r, echo = F}
+vif(model_1)
+```
+
+There is no significant multicollinearity detected in model_1.
+
+MODEL 2 
+--------
+
+building a model based on a dateset with eliminated influential values
+
+```{r, echo = F}
+model_2<- step(glm(target~., data = training_clean, family = 'binomial'), direction = 'backward')
+summary(model_2)
+vif(model_2)
+matrix(model_2)
+pR2(model_2)
+```
+
+MODEL 3
+--------
+
+Applying BoxCox variables transformations
+
+```{r, echo = F}
+model_3 = train(target ~., data = training_clean, 
+              method = "glm", family = "binomial",
+              preProcess = c("BoxCox"),trControl = trainControl(
+                  method = "cv", number = 10,
+                  savePredictions = TRUE))
+
+#  variables that were affected by BoxCox
+                  
+process <- preProcess(dplyr::select(training_clean, -target),
+                        method = c("BoxCox"))
+process$method
+summary(model_3)
+vif(model_3$finalModel)
+
+
+probabilities <- model_3 %>% predict(test.data, type = "prob")
+predicted.classes <- ifelse((probabilities[,2]) > 0.5, 1, 0)
+
+confusionMatrix(as.factor(predicted.classes), as.factor(test.data$target), dnn = c("Prediction", "Reference"))
+
+```
+
+
+MODEL 4 
+-------
+
+Based on important variables.
+
+Selecting important variables using caret package
+
+```{r, echo = F}
+# prepare training scheme
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model <- train(target~., data=training, method="glm",  trControl=control)
+# estimate variable importance
+importance <- varImp(model, scale=FALSE)
+# summarize importance
+print(importance)
+# plot importance
+plot(importance)
+```
+
+
+```{r, echo = F}
+model_4<- glm(target~., data = training %>% dplyr::select(-lstat, -rm), family = 'binomial')
+summary(model_4)
+vif(model_4)
+matrix(model_4)
+pR2(model_4)
+```
+
+
+MODEL 5 
+--------
+
+Based on the lowest Akaike information criterion (AIC). MASS package is used.
+
+```{r, echo = F}
+# Fit the model
+model_5 <- glm(target ~., data = train.data, family = binomial) %>%
+  stepAIC(trace = FALSE)
+# Summarize the final selected model
+summary(model_5)
+matrix(model_5)
+pR2(model_5)
+```
+
 
 # Select Models
 
