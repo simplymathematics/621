@@ -242,11 +242,12 @@ transformed.data <- as.data.frame(training2)
 kable(head(transformed.data)) %>% kable_styling()
 ```
 
-Build Models
+#Build Models
+
+Loading necessary packages for building models
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
 library(forecast)
-library(randomForest)
 library(e1071)
 library(ggplot2)
 library(cowplot)
@@ -256,47 +257,23 @@ library(broom)
 library(car)
 library(caret)
 library(pscl)
-```
-
-```{r, echo = F}
-# training <- as.data.frame(read.csv("https://raw.githubusercontent.com/simplymathematics/621/master/HW3/crime-training-data_modified.csv"))
-training$target<-as.factor(training$target)
-training$chas<-as.factor(training$chas)
+library(pROC)
 ```
 
 
-Spliting data set on train and test.
 
-```{r, echo = F}
-set.seed(123)
-training.samples <- training$target %>% 
-createDataPartition(p = 0.8, list = FALSE)
-train.data  <- training[training.samples, ]
-test.data <- training[-training.samples, ]
-```
+## MODEL 1
 
-Confusion matrix function.
+This is a basic model, we use all data without any transformations applied. Backward elimination method is used.
 
-```{r, echo = F}
-matrix<-function(model_name){
-        probabilities <- model_name %>% predict(test.data, type = "response")
-        predicted.classes <- ifelse(probabilities > 0.5, 1, 0)
-        confusionMatrix(as.factor(predicted.classes), as.factor(test.data$target), dnn = c("Prediction", "Reference"))
-}
-
-```
-
-MODEL 1 
--------
-
-Basic Model
-
-```{r, echo = F}
-model_1<- step(glm(target~., data = training, family = 'binomial'), direction = 'backward')
+```{r fig.height=10}
+training$target = as.factor(training$target)
+model_1<- step(glm(target~., data = training, family = 'binomial'), direction = "backward")
 summary(model_1)
-matrix(model_1)
-pR2(model_1)
+vif(model_1)
 ```
+
+There is no significant multicollinearity detected in model_1.
 
 Check model_1 for the following logistic regression assumptions:
 
@@ -310,9 +287,8 @@ Checking for a linear relationship between the logit of the outcome and each pre
 ```{r, echo = F}
 probabilities <- predict(model_1, type = "response")
 predicted.classes <- ifelse(probabilities > 0.5, 1, 0)
-# Select only numeric predictors
 mydata <- training %>%
-  dplyr::select_if(is.numeric) 
+  dplyr::select_if(is.numeric)
 predictors <- colnames(mydata)
 # Bind the logit and tidying the data for plot
 mydata <- mydata %>%
@@ -321,138 +297,171 @@ mydata <- mydata %>%
 
 ggplot(mydata, aes(logit, predictor.value))+
   geom_point(size = 0.5, alpha = 0.5) +
-  geom_smooth(method = "loess") + 
-  theme_bw() + 
+  geom_smooth(method = "loess") +
+  theme_bw() +
   facet_wrap(~predictors, scales = "free_y")
 
 ```
 
-The relationships are not linear, model can benefit from varibles transformations.
+Not all the relationships are linear, model can benefit from varibles transformations.
 
 
-Checking model_1 for the presence of influencial(leverage) values 
+Checking model_1 for the presence of influencial values.
 
-```{r, echo = F}
+```{r echo=F}
 plot(model_1, which = 4, id.n = 5)
-# Extract model results
-model.data <- augment(model_1) %>% 
-  mutate(index = 1:n()) 
+model.data <- augment(model_1) %>%
+  mutate(index = 1:n())
 model.data %>% top_n(5, .cooksd)
-ggplot(model.data, aes(index, .std.resid)) + 
+ggplot(model.data, aes(index, .std.resid)) +
   geom_point(aes(color = target), alpha = .5) +
   theme_bw()
-model.data %>% 
+model.data %>%
   filter(abs(.std.resid) > 3)
 ```
 
-Eliminating the row with influential value.
+Eliminating the row from training data set with influential value.
 
-```{r, echo = F}
-training_clean <-training %>% 
+```{r fig.height=10}
+training_clean <-training %>%
   filter(!(nox==0.464 & age==42.1))
-
 ```
 
-Checking for intercorrelations.
+## MODEL 2
 
-```{r, echo = F}
-vif(model_1)
-```
+Building a model based on a dateset with eliminated influential values.
 
-There is no significant multicollinearity detected in model_1.
-
-MODEL 2 
---------
-
-building a model based on a dateset with eliminated influential values
-
-```{r, echo = F}
-model_2<- step(glm(target~., data = training_clean, family = 'binomial'), direction = 'backward')
+```{r fig.height=10}
+model_2<- step(glm(target~., data = training_clean, family = 'binomial'), direction = "backward")
 summary(model_2)
 vif(model_2)
-matrix(model_2)
-pR2(model_2)
 ```
 
-MODEL 3
---------
-
-Applying BoxCox variables transformations
-
-```{r, echo = F}
-model_3 = train(target ~., data = training_clean, 
-              method = "glm", family = "binomial",
-              preProcess = c("BoxCox"),trControl = trainControl(
-                  method = "cv", number = 10,
-                  savePredictions = TRUE))
-
-#  variables that were affected by BoxCox
-                  
-process <- preProcess(dplyr::select(training_clean, -target),
-                        method = c("BoxCox"))
-process$method
-summary(model_3)
-vif(model_3$finalModel)
+There is no significant multicollinearity detected in model_2.
 
 
-probabilities <- model_3 %>% predict(test.data, type = "prob")
-predicted.classes <- ifelse((probabilities[,2]) > 0.5, 1, 0)
+## MODEL 3
 
-confusionMatrix(as.factor(predicted.classes), as.factor(test.data$target), dnn = c("Prediction", "Reference"))
+This model is built based on important variables, selected using caret package function varImp()
 
-```
-
-
-MODEL 4 
--------
-
-Based on important variables.
-
-Selecting important variables using caret package
-
-```{r, echo = F}
-# prepare training scheme
+```{r fig.height=10}
 control <- trainControl(method="repeatedcv", number=10, repeats=3)
-# train the model
 model <- train(target~., data=training, method="glm",  trControl=control)
-# estimate variable importance
 importance <- varImp(model, scale=FALSE)
-# summarize importance
 print(importance)
-# plot importance
 plot(importance)
 ```
 
 
-```{r, echo = F}
-model_4<- glm(target~., data = training %>% dplyr::select(-lstat, -rm), family = 'binomial')
+```{r fig.height=10}
+model_3<- step(glm(target~., data = training %>% dplyr::select(-lstat, -rm), family = 'binomial'), direction = "backward")
+summary(model_3)
+vif(model_3)
+```
+
+There is no significant multicollinearity detected in model_3.
+
+## MODEL 4
+
+This model is built based on the lowest Akaike information criterion (AIC). MASS package is used.
+
+```{r fig.height=10}
+model_4 <- glm(target ~., data = training, family = binomial) %>%
+  stepAIC(trace = FALSE)
 summary(model_4)
 vif(model_4)
-matrix(model_4)
-pR2(model_4)
 ```
 
+There is no significant multicollinearity detected in model_4.
 
-MODEL 5 
---------
+## MODEL 5
 
-Based on the lowest Akaike information criterion (AIC). MASS package is used.
+This model is built based on the data transformation performed in "Data Preparation" part
 
-```{r, echo = F}
-# Fit the model
-model_5 <- glm(target ~., data = train.data, family = binomial) %>%
-  stepAIC(trace = FALSE)
-# Summarize the final selected model
+```{r fig.height=10}
+model_5 <- step(glm(target ~., data = transformed.data, family = 'binomial'), direction = "backward")
 summary(model_5)
-matrix(model_5)
-pR2(model_5)
+vif(model_5)
 ```
 
+There is no significant multicollinearity detected in model_5.
 
 # Select Models
 
-- [ ] Use Log Likelihood, AIC, ROC curve,
-- [ ] Evaluate Training Set
-- [ ] Accuracy, Error, Precision, Sensitivity, Specificity, F1 score, AUC, conf matrix (hint: use assignment 2, and check out[this link](https://stackoverflow.com/questions/13548266/define-all-functions-in-one-r-file-call-them-from-another-r-file-how-if-pos) )
-- [ ] Make predictions with test set and interpret
+AIC, BIC, Loik and pseudR2 were used to select the best model.
 
+```{r echo=F}
+m1<-cbind(AIC=AIC(model_1),BIC=BIC(model_1), loglik=logLik(model_1),pseudoR2 = pR2(model_1)[4])
+m2<-cbind(AIC=AIC(model_2),BIC=BIC(model_2), loglik=logLik(model_2),pseudoR2 = pR2(model_2)[4])
+m3<-cbind(AIC=AIC(model_3),BIC=BIC(model_3), loglik=logLik(model_3),pseudoR2 = pR2(model_3)[4])
+m4<-cbind(AIC=AIC(model_4),BIC=BIC(model_4), loglik=logLik(model_4),pseudoR2 = pR2(model_4)[4])
+m5<-cbind(AIC=AIC(model_5),BIC=BIC(model_5), loglik=logLik(model_5),pseudoR2 = pR2(model_5)[4])
+summary = rbind(m1, m2, m3, m4, m5)
+rownames(summary) <- c("model_1", 'model_2',"model_3","model_4","model_5")
+summary
+```
+
+model_2 is the best model considering AIC,BIC, log likelihood and McFadden pseudoR2. model_2 has the lowest AIC, loglik and highest pseudoR2 which is indicative of a superior fit over all the other models.
+Although using that process might direct to choose a model that is overfitted.
+
+We will choose model_2 as the best model for this assignment.
+
+Splitting data set on train and test in order to assess model 2.
+
+```{r fig.height=10}
+set.seed(123)
+training.samples <- training$target %>%
+createDataPartition(p = 0.8, list = FALSE)
+train.data  <- training[training.samples, ]
+test.data <- training[-training.samples, ]
+```
+
+Roc curve of model_2
+
+```{r echo=F}
+test.data$predict<-predict(model_2, test.data, type='response')
+par(pty = "s")
+pROC <- roc(test.data$target, test.data$predict,
+smooth=FALSE, plot = TRUE, print.auc=TRUE,legacy.axes =TRUE,  col="red", main ="ROC Curve")
+```
+
+Let's choose a cut off probability measure for predicting with a high or low crime rate.
+
+```{r echo=F}
+#Using the `coords()` function in the pRoc package, the optimal measure is:
+cutoff<-coords(pROC, "best", ret="threshold",best.method = "youden")
+cutoff
+```
+
+The value is closed to 50% let's use 50% as a cutoff.
+
+Confusion matrix of model_2
+
+```{r echo=F}
+probabilities <- model_2 %>% predict(test.data, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, 1, 0)
+cm<-confusionMatrix(as.factor(predicted.classes), as.factor(test.data$target), dnn = c("Prediction", "Reference"), positive = '1')
+cm
+#Accuracy
+acc<-cm$overall["Accuracy"]; names(acc)<-NULL
+#Error Rate
+err<-1 - acc; names(err)<-NULL
+#Precision
+prec<-cm$byClass["Precision"]; names(prec)<-NULL
+#Sensivity
+sens<-cm$byClass["Sensitivity"]; names(sens)<-NULL
+#Specifity
+spec<-cm$byClass["Specificity"]; names(spec)<-NULL
+#F1 Score
+f1<-cm$byClass["F1"]; names(f1)<-NULL
+list(accuracy=acc, error_rate=err, precision=prec, sensitivity=sens, specificity=spec, F1=f1)
+```
+
+# Prediction
+
+```{r echo=F}
+test$predict_prob<-predict(model_2,test, type='response')
+test$predict_target<-ifelse(test$predict_prob>=0.5,1,0)
+head(test)
+# write.csv(test, "prediction.csv", row.names=FALSE)
+```
