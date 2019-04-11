@@ -267,7 +267,7 @@ library(pROC)
 This is a basic model, we use all data without any transformations applied. Backward elimination method is used.
 
 ```{r fig.height=10}
-training$target = as.factor(training$target)
+training$target = as.factor(training2$target)
 model_1<- step(glm(target~., data = training, family = 'binomial'), direction = "backward")
 summary(model_1)
 vif(model_1)
@@ -409,11 +409,8 @@ We will choose model_2 as the best model for this assignment.
 Splitting data set on train and test in order to assess model 2.
 
 ```{r fig.height=10}
-set.seed(123)
-training.samples <- training$target %>%
-createDataPartition(p = 0.8, list = FALSE)
-train.data  <- training[training.samples, ]
-test.data <- training[-training.samples, ]
+train.data  <- training2
+test.data <- test
 ```
 
 Roc curve of model_2
