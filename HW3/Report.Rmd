@@ -146,38 +146,9 @@ We verified our assumptions above using 1000 random forests. The `nox`,  `rad`, 
 
 In the following section, we will prepare and transform our variables for our model: 
 
-## Transformations for Multicollinearity
-
-We saw some correlation between our predictor variables in our exploritory correlation plots. We can test this correlation using variance inflation factors (VIF) to ensure our model is not affected by multicollinearity. 
-
-```{r echo=F}
-lm <- lm(target~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+lstat+medv, data=training) 
-vif <- ols_vif_tol(lm)
-high_mc <- vif %>% filter(VIF > 5) %>% mutate(Standard_Error = sqrt(VIF))
-kable(high_mc) %>% kable_styling()
-```
-
-This test shows us that the `rad` and `tax` variables have high multicollinearity above 5. Both variables should not be used together, without transformation in our model. The above table shows that as the standard error for both exceeds 2 times the amount then if these variables were not related. 
-
-Rad is an index variable that represents accessibility to radial highways. We choose to bifucate this data using the median value, 5.  
-
-```{r echo=F}
-training2<- mutate(training, rad = if_else(rad < median(rad), 0, 1)) 
-
-lm <- lm(target~zn+indus+chas+nox+rm+age+dis+rad+tax+ptratio+lstat+medv, data=training2) 
-vif <- ols_vif_tol(lm) %>% mutate(Standard_Error = sqrt(VIF)) %>% t()
-kable(vif) %>% kable_styling()
-```
-
-```{r}
-ggplot(training2, aes(x=rad))+geom_bar()
-```
-
-Through this change, the `tax` and `rad` variables are no longer affected by multicollinearity.
-
 ## Log Transformations
 
-While logistic modeling does not require normalized data, we choose to apply log transformations to adjust the scales for `age`,  `lstat`, and `tax` so that the variables better fit our models.  
+While logistic modeling does not require normalized data, we choose to apply log transformations to adjust the scales for `age`,  `lstat`, and `tax` to test if these changes improve our model.   
 
 ```{r fig.height=10}
 training2 <- training2 %>%
@@ -194,6 +165,23 @@ This transformation helps center the `age` and normalize the `lstat` and `tax` v
 ## New Variables
 
 We additionally chose to create several variables from our initial dataset. 
+
+
+### `rad`
+
+Rad is an index variable that represents accessibility to radial highways. We choose to bifucate this data using the median value, 5.  
+
+```{r echo=F}
+training2<- mutate(training, rad = if_else(rad < median(rad), 0, 1)) 
+```
+
+
+Our new variable for `rad` now looks like this: 
+
+```{r}
+ggplot(training2, aes(x=rad))+geom_bar()
+```
+
 
 ### `ptratio`
 
