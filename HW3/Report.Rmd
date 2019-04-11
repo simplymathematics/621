@@ -40,16 +40,21 @@ Your objective is to build a binary logistic regression model on the training da
 Replication of our work requires the following packages in Rstudio:
 
 ```{r, echo = TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
-#install.packages('corrplot')
-#install.packages('randomForest')
-#install.packages('olsrr')
-
-require(ggplot2)
+library(ggplot2)
+library(cowplot)
 require(dplyr)
 require(tidyr)
 require(corrplot)
 require(randomForest)
-require(olsrr)
+library(forecast)
+library(e1071)
+library(MASS)
+library(tidyverse)
+library(broom)
+library(car)
+library(caret)
+library(pscl)
+library(pROC)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
