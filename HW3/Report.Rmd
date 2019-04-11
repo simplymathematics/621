@@ -42,10 +42,10 @@ Replication of our work requires the following packages in Rstudio:
 ```{r, echo = TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
 library(ggplot2)
 library(cowplot)
-require(dplyr)
-require(tidyr)
-require(corrplot)
-require(randomForest)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(randomForest)
 library(forecast)
 library(e1071)
 library(MASS)
@@ -59,9 +59,9 @@ library(pROC)
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
 # Requirements for formatting and augmenting default settings for chunks. 
-require(knitr)
-require(kableExtra)
-require(default)
+library(knitr)
+library(kableExtra)
+library(default)
 
 knitr::opts_chunk$set(echo = T, message = T, warning = T) # change message/warning to F when finished
 
@@ -159,7 +159,7 @@ While logistic modeling does not require normalized data, we choose to apply log
 training2 <- training2 %>%
    mutate_at(.vars = vars(age, lstat, tax), .funs = log)
 
-training2 %>% select(age, lstat,tax) %>% gather() %>% ggplot(mapping = aes(x = value)) + 
+training2 %>% dplyr::select(age, lstat,tax) %>% gather() %>% ggplot(mapping = aes(x = value)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white")+
   geom_density(alpha=.2, fill="lightgrey")+
   facet_wrap(~key, ncol = 2, scales = 'free') 
@@ -236,24 +236,6 @@ kable(head(transformed.data)) %>% kable_styling()
 ```
 
 #Build Models
-
-Loading necessary packages for building models
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
-library(forecast)
-library(e1071)
-library(ggplot2)
-library(cowplot)
-library(MASS)
-library(tidyverse)
-library(broom)
-library(car)
-library(caret)
-library(pscl)
-library(pROC)
-```
-
-
 
 ## MODEL 1
 
