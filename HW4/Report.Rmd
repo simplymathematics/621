@@ -146,42 +146,42 @@ training%>%
     geom_density() 
 ```
 
-Age and YOJ 
+Age and YOJ appear to be fairly normally distributed. However, Claim frequency, home value, home kids, kids driving, and mvr pts appear to follow either continuous or discrete Poisson processes. In any case, claim frequency, homekids, kidsdriv, mvr_pts, oldclaim, tif, travtime, and yoj are count values. Log transforms will be inappropriate and skew the data, particularly the ones with 
 
 ```{r,echo = FALSE, fig.width=5, fig.height=3}
 
-ggplot(training, aes(x=TARGET_FLAG, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=TARGET_FLAG, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
 
-ggplot(training, aes(x=MSTATUS, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=MSTATUS, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
-ggplot(training, aes(x=SEX, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=SEX, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
-ggplot(training, aes(x=EDUCATION, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=EDUCATION, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
-ggplot(training, aes(x=CAR_USE, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=CAR_USE, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
-ggplot(training, aes(x=CAR_TYPE, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=CAR_TYPE, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
-ggplot(training, aes(x=RED_CAR, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=RED_CAR, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
-ggplot(training, aes(x=REVOKED, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=REVOKED, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
-ggplot(training, aes(x=URBANICITY, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=URBANICITY, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
-ggplot(training, aes(x=JOB, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=JOB, y=log(TARGET_AMT+1))) + 
   geom_violin()
 
-ggplot(training, aes(x=PARENT1, y=log10(TARGET_AMT+1))) + 
+ggplot(training, aes(x=PARENT1, y=log(TARGET_AMT+1))) + 
   geom_violin()
 ```
 
@@ -240,11 +240,16 @@ In the following section we will prepare and transform our variables for our mod
 
 ```{r, echo = FALSE}
 training$AGE[is.na(training$AGE)] <- mean(training$AGE, na.rm=TRUE)
+
 training$YOJ[is.na(training$YOJ)] <- mean(training$YOJ, na.rm=TRUE)
+
 training$HOME_VAL[is.na(training$HOME_VAL)] <- mean(training$HOME_VAL, na.rm=TRUE)
+
 training$CAR_AGE[is.na(training$CAR_AGE)] <- mean(training$CAR_AGE, na.rm=TRUE)
+
 training$INCOME[is.na(training$INCOME)] <- mean(training$INCOME, na.rm=TRUE)
 ```
+
 
 
 
