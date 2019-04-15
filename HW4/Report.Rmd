@@ -101,8 +101,7 @@ training %>% slice(1:5) %>% kable() %>% kable_styling()
 
 ## Summary Statistics 
 
-We look at summary of the data
-
+We look at summary of the data;
 ```{r, echo = FALSE}
 
 training<-training[,-1]
@@ -111,12 +110,7 @@ summary(training)%>% kable() %>% kable_styling()
 
 ```
 
-1) We can see that some variables have missing values.
-2) Home values and Income with blank values, we imputed with mean - maybe should be 0 instead
-2) We will impute with mean. 
-3) We will also make variable in dollar format numeric.
-4) One record has -3 for Car Age
-5) There are 4 records where Job is blank
+We can see that some variables have missing values, so we will have to impute them later. For home and income values, we imputed them as the mean, which doesn't change the variance. However, this assumes that these people have both income and homes. If not, this would bias our models. We must also convert the currency data to a numeric form. One record has a car age of -3, which was also replaced with the mean. There are 4 records where Job is blank, which will be treated as its own category.
 
 ```{r, echo = FALSE}
 
@@ -134,13 +128,14 @@ for(i in c(4,6,7,9,24)){
   training[is.na(training[,i]), i] <- mean(training[,i], na.rm = TRUE)
 }
 
-training$CAR_AGE[training$CAR_AGE<0]
+training$CAR_AGE[training$CAR_AGE<0] <- mean(training$CAR_AGE)
 
-training$JOB[training$JOB=='']
+#training$JOB[training$JOB=='']
 ```
 
 ## Density
 
+Below, we examine the distribution of values for each of the variables.
 ```{r,echo = FALSE, fig.width=8, fig.height=6}
 
 training%>%
@@ -150,6 +145,8 @@ training%>%
     facet_wrap(~ key, scales = "free") +   # In separate panels
     geom_density() 
 ```
+
+Age and YOJ 
 
 ```{r,echo = FALSE, fig.width=5, fig.height=3}
 
@@ -239,11 +236,9 @@ varImpPlot(fit2)
 
 
 # Data Preparation
-In the following section we will prepare and transform our variables for our model
+In the following section we will prepare and transform our variables for our model. For incomplete cases, we replaced the value of NULL data with the mean of the relevant data vector.
 
-Replacing null value by the means
-
-```{r}
+```{r, echo = FALSE}
 training$AGE[is.na(training$AGE)] <- mean(training$AGE, na.rm=TRUE)
 training$YOJ[is.na(training$YOJ)] <- mean(training$YOJ, na.rm=TRUE)
 training$HOME_VAL[is.na(training$HOME_VAL)] <- mean(training$HOME_VAL, na.rm=TRUE)
@@ -251,37 +246,10 @@ training$CAR_AGE[is.na(training$CAR_AGE)] <- mean(training$CAR_AGE, na.rm=TRUE)
 training$INCOME[is.na(training$INCOME)] <- mean(training$INCOME, na.rm=TRUE)
 ```
 
-Get the complete cases
-```{r}
-training<- training[complete.cases(training),]
-train2<-training
-head(train2)
-```
-
-Based on the data preparation we transform data using log for skewed HOMEKIDS, MVR_PTS, OLDCLAIM, TIF, KIDSDRIVE, CLM_FREQ
-```{r}
-training$HOMEKIDS <- log(training$HOMEKIDS+1)
-training$MVR_PTS <- log(training$MVR_PTS+1)
-training$OLDCLAIM <- log(training$OLDCLAIM+1)
-training$TIF <- log(training$TIF+1)
-training$KIDSDRIV <- log(training$KIDSDRIV+1)
-training$CLM_FREQ <- log(training$CLM_FREQ+1)
-training <- training[, !(colnames(training) %in% c("INDEX"))]
-head(training)
-```
 
 
-Let's select all the numeric value and study their correlation
-```{r}
-training_num<-select_if(training, is.numeric)
-corrplot(cor(training_num), method="circle")
-```
 
-```{r}
-cor.test(training_num$HOMEKIDS,training_num$AGE,method="pearson")
-```
 
-Our transformed data looks like this
 
 
 
