@@ -262,24 +262,6 @@ training <- data.frame(lapply(training, function(x){
   gsub("z_", "", x)
   
 }))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("PhD", "4", x)
-  
-}))
-training <- data.frame(lapply(training, function(x){
-  gsub("Masters", "3", x)
-  
-}))
-training <- data.frame(lapply(training, function(x){
-  gsub("Bachelors", "2", x)
-  
-}))
-training <- data.frame(lapply(training, function(x){
-  gsub("High School", "1", x)
-  
-}))
-unique(training$EDUCATION)
 ```
 
 
