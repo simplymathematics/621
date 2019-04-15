@@ -101,6 +101,7 @@ training %>% slice(1:5) %>% kable() %>% kable_styling()
 
 ## Summary Statistics 
 
+
 We look at summary of the data;
 ```{r, echo = FALSE}
 
@@ -110,7 +111,9 @@ summary(training)%>% kable() %>% kable_styling()
 
 ```
 
+
 We can see that some variables have missing values, so we will have to impute them later. For home and income values, we imputed them as the mean, which doesn't change the variance. However, this assumes that these people have both income and homes. If not, this would bias our models. We must also convert the currency data to a numeric form. One record has a car age of -3, which was also replaced with the mean. There are 4 records where Job is blank, which will be treated as its own category.
+
 
 ```{r, echo = FALSE}
 
@@ -128,14 +131,22 @@ for(i in c(4,6,7,9,24)){
   training[is.na(training[,i]), i] <- mean(training[,i], na.rm = TRUE)
 }
 
+
 training$CAR_AGE[training$CAR_AGE<0] <- mean(training$CAR_AGE)
 
 #training$JOB[training$JOB=='']
+
+training$CAR_AGE[training$CAR_AGE<0]
+
+training$JOB[training$JOB=='']
+
 ```
 
 ## Density
 
+
 Below, we examine the distribution of values for each of the variables.
+
 ```{r,echo = FALSE, fig.width=8, fig.height=6}
 
 training%>%
@@ -145,6 +156,7 @@ training%>%
     facet_wrap(~ key, scales = "free") +   # In separate panels
     geom_density() 
 ```
+
 
 Age and YOJ appear to be fairly normally distributed. However, Claim frequency, home value, home kids, kids driving, and mvr pts appear to follow either continuous or discrete quasi-Poisson processes. In any case, claim frequency, homekids, kidsdriv, mvr_pts, oldclaim, tif, travtime, and yoj are count values. Log transforms will be inappropriate and skew the data, particularly the ones with 
 
@@ -233,6 +245,7 @@ varImpPlot(fit2)
 
 
 # Data Preparation
+
 In the following section we will prepare and transform our variables for our model. For incomplete cases, we replaced the value of NULL data with the mean of the relevant data vector.
 
 ```{r, echo = FALSE}
@@ -263,10 +276,6 @@ training <- data.frame(lapply(training, function(x){
   
 }))
 ```
-
-
-
-
 
 
 
