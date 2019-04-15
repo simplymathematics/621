@@ -146,7 +146,7 @@ training%>%
     geom_density() 
 ```
 
-Age and YOJ appear to be fairly normally distributed. However, Claim frequency, home value, home kids, kids driving, and mvr pts appear to follow either continuous or discrete Poisson processes. In any case, claim frequency, homekids, kidsdriv, mvr_pts, oldclaim, tif, travtime, and yoj are count values. Log transforms will be inappropriate and skew the data, particularly the ones with 
+Age and YOJ appear to be fairly normally distributed. However, Claim frequency, home value, home kids, kids driving, and mvr pts appear to follow either continuous or discrete quasi-Poisson processes. In any case, claim frequency, homekids, kidsdriv, mvr_pts, oldclaim, tif, travtime, and yoj are count values. Log transforms will be inappropriate and skew the data, particularly the ones with 
 
 ```{r,echo = FALSE, fig.width=5, fig.height=3}
 
@@ -190,10 +190,7 @@ ggplot(training, aes(x=PARENT1, y=log(TARGET_AMT+1))) +
 We then build scatter plot matrix for continious variables
 
 ```{r,, echo = FALSE, fig.width=12, fig.height=8,warning=FALSE,message=FALSE}
-
-#install.packages('psych')
-
-library(psych)
+require(psych)
 
 
 training%>%select_if(is.numeric)%>%pairs.panels( 
@@ -250,7 +247,40 @@ training$CAR_AGE[is.na(training$CAR_AGE)] <- mean(training$CAR_AGE, na.rm=TRUE)
 training$INCOME[is.na(training$INCOME)] <- mean(training$INCOME, na.rm=TRUE)
 ```
 
+We must also convert all of the education categories into numerical ones.
 
+```{r}
+training <- data.frame(lapply(training, function(x){
+  gsub("z_", "", x)
+  
+}))
+training <- data.frame(lapply(training, function(x){
+  gsub("<High School", "High School", x)
+  
+}))
+training <- data.frame(lapply(training, function(x){
+  gsub("z_", "", x)
+  
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("PhD", "4", x)
+  
+}))
+training <- data.frame(lapply(training, function(x){
+  gsub("Masters", "3", x)
+  
+}))
+training <- data.frame(lapply(training, function(x){
+  gsub("Bachelors", "2", x)
+  
+}))
+training <- data.frame(lapply(training, function(x){
+  gsub("High School", "1", x)
+  
+}))
+unique(training$EDUCATION)
+```
 
 
 
