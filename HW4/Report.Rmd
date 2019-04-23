@@ -185,10 +185,13 @@ varImpPlot(fit2)
 
 ```
 
+# PART 2: DATA PREPARATION
 
-# Data Preparation
+In the following section we prepared and transformed our variables for our model. 
 
-In the following section we will prepare and transform our variables for our model. For incomplete cases, we replaced the value of NULL data with the mean of the relevant data vector.
+## Clean Data 
+
+For incomplete cases, we replaced the value of NULL data with the mean of the relevant data vector.
 
 ```{r, echo = FALSE}
 training$AGE[is.na(training$AGE)] <- mean(training$AGE, na.rm=TRUE)
@@ -218,7 +221,17 @@ training <- data.frame(lapply(training, function(x){
   
 }))
 ```
+## Bucket Transformations
 
+Add any transformations related to putting it into buckets. 
+
+## Mathematical Transformations 
+
+INSERT LOG TRANSFORMATION SECTION. Add any additional, applicable transformations (ie. box-cox, sqrt, etc).
+
+## New Variables 
+
+Add any new or combined variables (such as ratios or adding or multiplying) that should be included in the models.  
 
 
 
