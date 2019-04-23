@@ -1,0 +1,338 @@
+---
+title: "HW 4"
+author: "Team 2"
+date: "April 24, 2019"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    pdf_document: default
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+# OVERVIEW
+
+In this homework assignment, we will explore, analyze and model a data set containing approximately 8000 records representing a customer at an auto insurance company. Each record has two response variables. The first response variable, TARGET_FLAG, is a 1 or a 0. A "1" means that the person was in a car crash. A zero means that the person was not in a car crash. The second response variable is TARGET_AMT. This value is zero if the person did not crash their car. But if they did crash their car, this number will be a value greater than zero
+
+## Dependencies
+
+Replication of our work requires the following packages in Rstudio:
+
+```{r, echo=F, message=F, warning=F, error=F, comment=F}
+# Set working directory
+try(setwd("~/GitHub/621/HW4"))
+
+# Requirements for formatting and augmenting default settings for chunks. 
+library(knitr)
+library(kableExtra)
+library(default)
+
+knitr::opts_chunk$set(echo=F, message=F, warning=F, error=F, comment=F) 
+
+default(kable_styling)  <- list(bootstrap_options = c("basic"), 
+                                position = "center", 
+                                full_width = T,
+                                font_size = NULL)
+
+default(row_spec)  <- list(row = 0:0, bold = T)
+```
+
+```{r, echo=T}
+library(ggplot2)
+library(ggpubr)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(randomForest)
+library(olsrr)
+library(psych)
+```
+
+## Objective 
+
+Our objective is to build multiple linear regression and binary logistic regression models on the `training` data to predict the probability that a person will crash their car and also the amount of money it will cost if the person does crash their car.
+
+# PART 1: DATA EXPLORATION
+
+First, we read the data as a csv and then examined the below variable from the `training` dataset. 
+
+```{r}
+training <- as.data.frame(read.csv("insurance_training_data.csv"))
+test <- as.data.frame(read.csv("insurance-evaluation-data.csv"))
+
+include_graphics("./hw4_vars.jpg")
+```
+
+
+## Summary Statistics 
+
+We look at summary of the data below. Note that rows marked with `*` indicate categorical variables that were converted to numeric.   
+
+```{r}
+training<-training[,-1]
+summary <- round(describe(training, skew = F), 2)
+
+summary %>% kable() %>% kable_styling()
+```
+
+From this, we can see that some variables have missing values, so we will have to impute them later. For `HOME_VAL` and `INCOME` values, we imputed them as the mean, which doesn't change the variance. However, this assumes that these people have both income and homes. If not, this would bias our models.   
+
+We must also convert the currency data to a numeric form. One record has a car age of -3, which was also replaced with the mean. There are 4 records where `JOB` is blank, which will be treated as its own category.
+
+```{r}
+training$TARGET_FLAG<-as.factor(training$TARGET_FLAG)
+
+training$HOME_VAL<-as.numeric(gsub(",","",(gsub("\\$","",as.character(training$HOME_VAL)))))
+
+training$INCOME<-as.numeric(gsub(",","",(gsub("\\$","",as.character(training$INCOME)))))
+
+training$BLUEBOOK<-as.numeric(gsub(",","",(gsub("\\$","",as.character(training$BLUEBOOK)))))
+
+training$OLDCLAIM<-as.numeric(gsub(",","",(gsub("\\$","",as.character(training$OLDCLAIM)))))
+```
+
+```{r, echo=T}
+for(i in c(4,6,7,9,24)){
+  training[is.na(training[,i]), i] <- mean(training[,i], na.rm = TRUE)
+}
+
+
+training$CAR_AGE[training$CAR_AGE<0] <- mean(training$CAR_AGE)
+
+training$CAR_AGE[training$CAR_AGE<0]
+
+training$JOB[training$JOB=='']
+```
+
+## Density
+
+Below, we examine the distribution of values for each of the variables.
+
+```{r, fig.height=5}
+training %>%
+  select_if(is.numeric) %>%               # Keep only numeric columns
+  gather() %>%                            # Convert to key-value pairs
+  ggplot(aes(value)) +                    # Plot the values
+    facet_wrap(~key, scales = "free") +  # In separate panels
+    geom_density() 
+```
+
+
+Variables, `AGE` and `YOJ`, appear to be fairly normally distributed. However, `CLM_FREQ`, `HOME_VAL`, `HOME_KIDS`, `KIDSDRIV`, and `MVR_PTS` appear to follow either a continuous or discrete quasi-Poisson process.  
+
+In any case, claim frequency, `HOME_KIDS`, `KIDSDRIV`, `MVR_PTS`, `OLDCLAIM`, `TIF`, `TRAVTIME`, and `YOJ` are count values. Log transforms will be inappropriate and skew the data, particularly the ones with 
+
+***
+
+**??????** Sentence trails off. Please complete thought - jm
+
+***
+
+```{r fig.height=8}
+p1 <- ggplot(training, aes(x=TARGET_FLAG, y=log(TARGET_AMT+1))) + geom_violin()
+
+p2 <- ggplot(training, aes(x=MSTATUS, y=log(TARGET_AMT+1))) + geom_violin()
+
+p3 <- ggplot(training, aes(x=SEX, y=log(TARGET_AMT+1))) + geom_violin()
+
+p4 <- ggplot(training, aes(x=EDUCATION, y=log(TARGET_AMT+1))) + geom_violin()
+
+p5 <- ggplot(training, aes(x=CAR_USE, y=log(TARGET_AMT+1))) + geom_violin()
+
+p6 <- ggplot(training, aes(x=CAR_TYPE, y=log(TARGET_AMT+1))) + geom_violin()
+
+p7 <- ggplot(training, aes(x=RED_CAR, y=log(TARGET_AMT+1))) +  geom_violin()
+
+p8 <- ggplot(training, aes(x=REVOKED, y=log(TARGET_AMT+1))) + geom_violin()
+
+p9 <- ggplot(training, aes(x=URBANICITY, y=log(TARGET_AMT+1))) + geom_violin()
+
+p10 <- ggplot(training, aes(x=PARENT1, y=log(TARGET_AMT+1))) + geom_violin()
+
+p11 <- ggplot(training, aes(x=JOB, y=log(TARGET_AMT+1))) + geom_violin()
+
+ggarrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, ncol = 2, nrow = 6)
+```
+
+## Scatter plot matrix
+
+We then build scatter plot matrix for continious variables
+
+```{r, fig.height=5}
+training %>% 
+  select_if(is.numeric) %>%
+  pairs.panels(
+    method = "pearson", # correlation method
+    hist.col = "#00AFBB",
+    density = T  # show density plots
+             )
+```
+
+## Correlation  
+
+We can see our correlation matrix below. A dark blue circle represents a strong positive relationship and a dark red circle represents a strong negative relationship between two variables. 
+
+```{r, fig.height=5}
+results1 <- training %>%
+  select_if(is.numeric) %>% 
+  cor(method = 'pearson', use = 'complete.obs')
+
+corrplot(results1, method = 'circle')
+```
+
+Finally, we can use the `randomforest` package to verify our assumptions from the correlation plot.
+
+```{r, fig.height=6}
+training2 <- training
+training2$TARGET_AMT<- NULL
+training2$TARGET_FLAG<- NULL
+target1 <- training$TARGET_AMT
+target2 <- training$TARGET_FLAG
+
+fit1 <- randomForest(training2, target1, importance = TRUE, ntree = 50)
+
+varImpPlot(fit1)
+
+fit2 <- randomForest(training2, target2, importance = TRUE, ntree = 50)
+
+varImpPlot(fit2)
+```
+
+
+# PART 2: DATA PREPARATION
+
+In the following section we will prepare and transform our variables for our model. 
+
+## Clean Data 
+
+For incomplete cases, we replaced the value of `NULL` data with the mean of the relevant data vector.
+
+```{r}
+training$AGE[is.na(training$AGE)] <- mean(training$AGE, na.rm=TRUE)
+
+training$YOJ[is.na(training$YOJ)] <- mean(training$YOJ, na.rm=TRUE)
+
+training$HOME_VAL[is.na(training$HOME_VAL)] <- mean(training$HOME_VAL, na.rm=TRUE)
+
+training$CAR_AGE[is.na(training$CAR_AGE)] <- mean(training$CAR_AGE, na.rm=TRUE)
+
+training$INCOME[is.na(training$INCOME)] <- mean(training$INCOME, na.rm=TRUE)
+```
+
+We must also convert all of the education categories into numerical ones.
+
+```{r}
+training <- data.frame(lapply(training, function(x){
+  gsub("z_", "", x)
+  
+}))
+training <- data.frame(lapply(training, function(x){
+  gsub("<High School", "High School", x)
+  
+}))
+training <- data.frame(lapply(training, function(x){
+  gsub("z_", "", x)
+  
+}))
+```
+
+## Bucket Transformations
+
+Transform data by putting it into buckets. 
+
+## Mathematical Transformations 
+
+Log or square root (or use Box-Cox) where applicable. 
+
+## New Variables 
+
+Combine variables (such as ratios or adding or multiplying) to create new variables 
+
+# PART 3. BUILD MODELS
+
+Using the transformed data above, we developed two multiple linear regression and three binary logistic regression models. Through these models, we hope to predict **(1)** the probability that a person will crash their car and **(2)** the amount of money it will cost if the person does crash their car.
+
+## Multiple Linear Regression 
+
+MLR for `TARGET_AMT`.
+
+### MLR 1
+[] Create Model #1  
+[] Describe the techniques you used.
+[] Show summarised results  
+
+### MLR 2
+[] Create Model #2  
+[] Describe the techniques you used. 
+[] Show summarised results  
+
+### MLR ANALYSIS 
+
+Discuss the coefficients in the models, do they make sense? For example, if a person has a lot of traffic tickets, you would reasonably expect that person to have more car crashes. If the coefficient is negative (suggesting that the person is a safer driver), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why?
+
+## Binary Logistic Regression
+
+BLR for `TARGET_FLAG`
+
+### BLR 1
+[] Create Model #1  
+[] Describe the techniques you used.
+[] Show summarised results  
+
+### BLR 2
+[] Create Model #2  
+[] Describe the techniques you used.
+[] Show summarised results  
+
+### BLR 3
+[] Create Model #3  
+[] Describe the techniques you used.
+[] Show summarised results  
+
+### BLR ANALYSIS 
+
+Discuss the coefficients in the models, do they make sense? For example, if a person has a lot of traffic tickets, you would reasonably expect that person to have more car crashes. If the coefficient is negative (suggesting that the person is a safer driver), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why?
+
+# PART 4: SELECT MODELS 
+
+Select the best multiple linear regression model and the best binary logistic regression model. Discuss why you selected your models. 
+
+## MLR Evaluation 
+
+Use a metric such as Adjusted R2, RMSE, etc. Explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output.  
+
+Using the training data set, evaluate the multiple linear regression model based on: 
+
+### Mean Squared Error
+
+### R2
+
+### F-statistic
+
+### Residual plots. 
+
+## BLR Evaluation 
+
+Use a metric such as log likelihood, AIC, ROC curve, etc. Using the training data set, evaluate the binary logistic regression model based on:
+
+### Accuracy
+
+### Classification Error Rate
+
+### Precision
+
+### Sensitivity
+
+### Specificity
+
+### F1 score
+
+### AUC
+
+### Confusion Matrix
+
+## Predictions 
+
+Make predictions using the evaluation data set. 
