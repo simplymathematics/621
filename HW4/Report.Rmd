@@ -1,102 +1,70 @@
 ---
 title: "HW 4"
 author: "Team 2"
-date: "April 12, 2019"
+date: "April 24, 2019"
 output:
+  pdf_document:
+    toc: yes
   html_document:
     pdf_document: default
     theme: cosmo
     toc: yes
     toc_float: yes
-  pdf_document:
-    toc: yes
 ---
 
-# Overview
+# OVERVIEW
 
-In this homework assignment, we will explore, analyze and model a data set containing approximately 8000
-records representing a customer at an auto insurance company. Each record has two response variables. The
-first response variable, TARGET_FLAG, is a 1 or a 0. A "1" means that the person was in a car crash. A zero
-means that the person was not in a car crash. The second response variable is TARGET_AMT. This value is zero
-if the person did not crash their car. But if they did crash their car, this number will be a value greater than zero
-
-List of variables:
-
-|VARIABLE_NAME  |DEFINITION                                         |THEORETICAL_EFFECT                                                                   |
-|---------------|---------------------------------------------------|-------------------------------------------------------------------------------------|
-|INDEX         |Identification Variable (do not use)                |None                                                                                 |
-|TARGET_FLAG   |Was Car in a crash? 1=YES 0=NO                      |None                                                                                 |
-|TARGET_AMT    |If car was in a crash, what was the cost            |None                                                                                 |
-|AGE           |Age of Driver                                       |Very young people tend to be risky. Maybe very old people also.                      |
-|BLUEBOOK      |Value of Vehicle                                    |Unknown effect on probability of collision, but probably effect the payout if there i| |              |                                                    | crash                                                                               |
-|CAR_AGE       |Vehicle Age                                         |Unknown effect on probability of collision, but probably effect the payout if there i| |              |                                                    |  crash                                                                              |
-|CAR_TYPE      |Type of Car                                         |Unknown effect on probability of collision, but probably effect the payout if there i| |              |                                                    |crash                                                                                |
-|CAR_USE       |Vehicle Use                                         |Commercial vehicles are driven more, so might increase probability of collision      |
-|CLM_FREQ      |# Claims (Past 5 Years)                             |The more claims you filed in the past, the more you are likely to file in the future |
-|EDUCATION     |Max Education Level                                 |Unknown effect, but in theory more educated people tend to drive more safely         |
-|HOMEKIDS      |# Children at Home                                  |Unknown effect                                                                       |
-|HOME_VAL      |Home Value                                          |In theory, home owners tend to drive more responsibly                                |
-|INCOME        |Income                                              |In theory, rich people tend to get into fewer crashes                                |
-|JOB           |Job Category                                        |In theory, white collar jobs tend to be safer                                        |
-|KIDSDRIV      |# Driving Children                                  |When teenagers drive your car, you are more likely to get into crashes               |
-|MSTATUS       |Marital Status                                      |In theory, married people drive more safely                                          |
-|MVR_PTS       |Motor Vehicle Record Points                         |If you get lots of traffic tickets, you tend to get into more crashes                |
-|OLDCLAIM      |Total Claims (Past 5 Years)                         |If your total payout over the past five years was high, this suggests future payouts | |              |                                                    | will be high                                                                        |
-|PARENT1       |Single Parent                                       |Unknown effect                                                                       |
-|RED_CAR       |A Red Car                                           |Urban legend says that red cars (especially red sports cars) are more risky. Is that  | |              |                                                    |   true?                                                                              |
-|REVOKED       |License Revoked (Past 7 Years)                      |If your license was revoked in the past 7 years, you probably are a more risky driver.|
-|SEX           |Gender                                              |Urban legend says that women have less crashes then men. Is that true?                |
-|TIF           |Time in Force                                       |People who have been customers for a long time are usually more safe.                 |
-|TRAVTIME      |Distance to Work                                    |Long drives to work usually suggest greater risk                                      |
-|URBANICITY    |Home/Work Area                                      |Unknown                                                                               |
-|YOJ           |Years on Job                                        |People who stay at a job for a long time are usually more safe                        |
-
-## Objective 
-
-Our objective is to build multiple linear regression and binary logistic regression models on the training data
-to predict the probability that a person will crash their car and also the amount of money it will cost if the person
-does crash their car.
+In this homework assignment, we will explore, analyze and model a data set containing approximately 8000 records representing a customer at an auto insurance company. Each record has two response variables. The first response variable, TARGET_FLAG, is a 1 or a 0. A "1" means that the person was in a car crash. A zero means that the person was not in a car crash. The second response variable is TARGET_AMT. This value is zero if the person did not crash their car. But if they did crash their car, this number will be a value greater than zero
 
 ## Dependencies
 
 Replication of our work requires the following packages in Rstudio:
 
-```{r, echo = TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
-#install.packages('corrplot')
-#install.packages('randomForest')  
+```{r, echo=F, message=F, warning=F, error=F, comment=F}
+# Set working directory
+try(setwd("~/GitHub/621/HW4"))
 
-require(ggplot2)
-require(dplyr)
-require(tidyr)
-require(corrplot)
-require(randomForest)
-require(olsrr)
-```
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
 # Requirements for formatting and augmenting default settings for chunks. 
-require(knitr)
-require(kableExtra)
-require(default)
+library(knitr)
+library(kableExtra)
+library(default)
 
-knitr::opts_chunk$set(echo = T, message = T, warning = T) # change message/warning to F when finished
+knitr::opts_chunk$set(echo=F, message=F, warning=F, error=F, comment=F) 
 
 default(kable_styling)  <- list(bootstrap_options = c("basic"), 
                                 position = "center", 
-                                full_width = TRUE,
+                                full_width = T,
                                 font_size = NULL)
+
+default(row_spec)  <- list(row = 0:0, bold = T)
 ```
 
-# Data Exploration
+```{r, echo=T}
+library(ggplot2)
+library(ggpubr)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(randomForest)
+library(olsrr)
+library(psych)
+```
 
-First, we read the data as a csv then performed some simple statistical calculations so that we could explore the data. Below we can see a sample of the data output as it was read from the csv.
+## Objective 
 
-```{r, echo = FALSE}
+Our objective is to build multiple linear regression and binary logistic regression models on the `training` data to predict the probability that a person will crash their car and also the amount of money it will cost if the person does crash their car.
+
+# PART 1: DATA EXPLORATION
+
+First, we read the data as a csv and then examined the below variable from the `training` dataset. 
+
+```{r}
 training <- as.data.frame(read.csv("insurance_training_data.csv"))
 test <- as.data.frame(read.csv("insurance-evaluation-data.csv"))
 
-training %>% slice(1:5) %>% kable() %>% kable_styling()
+include_graphics("./hw4_vars.jpg")
 ```
+
 
 
 ## Summary Statistics 
