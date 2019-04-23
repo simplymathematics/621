@@ -233,5 +233,91 @@ INSERT LOG TRANSFORMATION SECTION. Add any additional, applicable transformation
 
 Add any new or combined variables (such as ratios or adding or multiplying) that should be included in the models.  
 
+# PART 3. BUILD MODELS
+
+Using the transformed data above, we developed two multiple linear regression and three binary logistic regression models. Through these models, we hope to predict **(1)** the probability that a person will crash their car and **(2)** the amount of money it will cost if the person does crash their car.
+
+## Multiple Linear Regression 
+
+MLR for `TARGET_AMT`.
+
+### MLR 1
+[] Create Model #1  
+[] Describe the techniques you used.
+[] Show summarised results  
+
+### MLR 2
+[] Create Model #2  
+[] Describe the techniques you used. 
+[] Show summarised results  
+
+### MLR ANALYSIS 
+
+Discuss the coefficients in the models, do they make sense? For example, if a person has a lot of traffic tickets, you would reasonably expect that person to have more car crashes. If the coefficient is negative (suggesting that the person is a safer driver), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why?
+
+## Binary Logistic Regression
+
+BLR for `TARGET_FLAG`
+
+### BLR 1
+[] Create Model #1  
+[] Describe the techniques you used.
+[] Show summarised results  
+
+### BLR 2
+[] Create Model #2  
+[] Describe the techniques you used.
+[] Show summarised results  
+
+### BLR 3
+[] Create Model #3  
+[] Describe the techniques you used.
+[] Show summarised results  
+
+### BLR ANALYSIS 
+
+Discuss the coefficients in the models, do they make sense? For example, if a person has a lot of traffic tickets, you would reasonably expect that person to have more car crashes. If the coefficient is negative (suggesting that the person is a safer driver), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why?
+
+# PART 4: SELECT MODELS 
+
+Select the best multiple linear regression model and the best binary logistic regression model. Discuss why you selected your models. 
+
+## MLR Evaluation 
+
+Use a metric such as Adjusted R2, RMSE, etc. Explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output.  
+
+Using the training data set, evaluate the multiple linear regression model based on: 
+
+### Mean Squared Error
+
+### R2
+
+### F-statistic
+
+### Residual plots. 
+
+## BLR Evaluation 
+
+Use a metric such as log likelihood, AIC, ROC curve, etc. Using the training data set, evaluate the binary logistic regression model based on:
+
+### Accuracy
+
+### Classification Error Rate
+
+### Precision
+
+### Sensitivity
+
+### Specificity
+
+### F1 score
+
+### AUC
+
+### Confusion Matrix
+
+## Predictions 
+
+Make predictions using the evaluation data set. 
 
 
