@@ -36,3 +36,7 @@ vignettes/*.pdf
 rsconnect/
 *Report.tex
 */Report_files/*
+
+# My Blog locally ~simplymathematics. Stop removing this
+
+*/Blog/*
