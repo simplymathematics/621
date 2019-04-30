@@ -34,20 +34,14 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
-<<<<<<< HEAD
 *Report.tex
 */Report_files/*
 
 # My Blog locally ~simplymathematics. Stop removing this
 
 */Blog/*
-=======
-HW3/Report.tex
-HW3/Report_files/figure-latex/unnamed-chunk-10-1.pdf
-HW3/Report_files/figure-latex/unnamed-chunk-11-1.pdf
-HW3/Report_files/figure-latex/unnamed-chunk-5-1.pdf
-HW3/Report_files/figure-latex/unnamed-chunk-6-1.pdf
-HW3/Report_files/figure-latex/unnamed-chunk-7-1.pdf
-HW3/Report_files/figure-latex/unnamed-chunk-9-1.pdf
-HW5/Report_files/figure-latex/unnamed-chunk-6-1.pdf
->>>>>>> 1b1464a6aede7943f73bee79feb2ff3151180bf3
+
+
+# Latex files for rendering
+*/Report.tex
+*/Report_files/*
