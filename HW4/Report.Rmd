@@ -20,7 +20,7 @@ In this homework assignment, we will explore, analyze and model a data set conta
 
 Replication of our work requires the following packages in Rstudio:
 
-<<<<<<< HEAD
+
 ```{r, echo = TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
 #install.packages('corrplot')
 #install.packages('randomForest')  
@@ -31,16 +31,10 @@ require(tidyr)
 require(corrplot)
 require(randomForest)
 require(olsrr)
-require(doRNG) #bestNormalize dependency
-require(bestNormalize)
-require(fastDummies)
 require(forecast)
 ```
-=======
+
 ```{r, echo=F, message=F, warning=F, error=F, comment=F}
-# Set working directory
-try(setwd("~/GitHub/621/HW4"))
->>>>>>> 1b1464a6aede7943f73bee79feb2ff3151180bf3
 
 # Requirements for formatting and augmenting default settings for chunks. 
 library(knitr)
@@ -140,13 +134,7 @@ training %>%
 
 Variables, `AGE` and `YOJ`, appear to be fairly normally distributed. However, `CLM_FREQ`, `HOME_VAL`, `HOME_KIDS`, `KIDSDRIV`, and `MVR_PTS` appear to follow either a continuous or discrete quasi-Poisson process.  
 
-In any case, claim frequency, `HOME_KIDS`, `KIDSDRIV`, `MVR_PTS`, `OLDCLAIM`, `TIF`, `TRAVTIME`, and `YOJ` are count values. Log transforms will be inappropriate and skew the data, particularly the ones with 
 
-***
-
-**??????** Sentence trails off. Please complete thought - jm
-
-***
 
 ```{r fig.height=8}
 p1 <- ggplot(training, aes(x=TARGET_FLAG, y=log(TARGET_AMT+1))) + geom_violin()
@@ -239,8 +227,11 @@ training$CAR_AGE[is.na(training$CAR_AGE)] <- mean(training$CAR_AGE, na.rm=TRUE)
 training$INCOME[is.na(training$INCOME)] <- mean(training$INCOME, na.rm=TRUE)
 ```
 
-We must also convert all of the education categories into numerical ones.
+We must also convert all of the categorical variables into numerical ones. Additionally, we've removed the JOB column since it is strongly correlated with income.
+```{r}
 
+
+```
 
 ```{r, echo = FALSE}
 options(warn = -1)
@@ -277,10 +268,6 @@ training <- data.frame(lapply(training, function(x){
   
 }))
 
-training <- data.frame(lapply(training, function(x){
-  gsub("No", "0", x)
-  
-}))
 
 training <- data.frame(lapply(training, function(x){
   gsub("Highly Urban/ Urban", "1", x)
@@ -320,14 +307,32 @@ training <- data.frame(lapply(training, function(x){
   gsub("PhD", 4, x)
 }))
 
-#training$JOB[is.na(training$JOB)] <- "None"
-#training$JOB
+training$JOB <- NULL #Highly colinear with income
 
-training$JOB <- as.factor(training$JOB)
+training$CAR_TYPE <- as.factor(as.character(training$CAR_TYPE))
 
-training <- suppressWarnings(dummy_cols(training, select_columns = "JOB"))
+training <- suppressWarnings(dummy_cols(training, select_columns = "CAR_TYPE"))
 
-training$JOB <- NULL
+training$CAR_TYPE <- NULL
+training$CAR_TYPE_Minivan <- as.numeric(as.character(training$CAR_TYPE_Minivan))
+training$CAR_TYPE_Minivan[is.na(x = training$CAR_TYPE_Minivan)] <- 0
+
+training$CAR_TYPE_SUV <- as.numeric(as.character(training$CAR_TYPE_SUV))
+training$CAR_TYPE_SUV[is.na(x = training$CAR_TYPE_SUV)] <- 0
+
+training$CAR_TYPE_Sports.Car <- as.numeric(as.character(training$CAR_TYPE_Sports.Car))
+training$CAR_TYPE_Sports.Car[is.na(x = training$CAR_TYPE_Sports.Car)] <- 0
+
+training$CAR_TYPE_Van <- as.numeric(as.character(training$CAR_TYPE_Van))
+training$CAR_TYPE_Van[is.na(x = training$CAR_TYPE_Van)] <- 0
+
+
+training$CAR_TYPE_Panel.Truck <- as.numeric(as.character(training$CAR_TYPE_Panel.Truck))
+training$CAR_TYPE_Panel.Truck[is.na(x = training$CAR_TYPE_Panel.Truck)] <- 0
+
+
+training$CAR_TYPE_Pickup <- as.numeric(as.character(training$CAR_TYPE_Pickup))
+training$CAR_TYPE_Pickup[is.na(x = training$CAR_TYPE_Pickup)] <- 0
 
 training <- data.frame(lapply(training, function(x){
   gsub('NA', 0, x)
@@ -348,25 +353,19 @@ training <- data.frame(lapply(training, function(x){
   gsub("yes", 1, x)
 }))
 
-training <- data.frame(lapply(training, function(x){
-  as.numeric(x)
-}))
-
-training$JOB_ <- NULL
-
 
 training$COMMERCIAL_USE <- training$CAR_USE
 training$CAR_USE <- NULL
 
 training$IS_MALE <- training$SEX
 training$SEX <- NULL
+training <- data.frame(lapply(training, function(x){
+  as.numeric(as.character(x))
+  replace_na(x, replace = 0)
+}))
 training
 ```
 ```{r}
-
-#training <- data.frame(lapply(training, function(x){
-#  gsub(NA, 0, x)
-#}))
 
 
 ```
