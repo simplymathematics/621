@@ -14,27 +14,15 @@ output:
 
 # OVERVIEW
 
-In this homework assignment, we will explore, analyze and model a data set containing approximately 8000 records representing a customer at an auto insurance company. Each record has two response variables. The first response variable, TARGET_FLAG, is a 1 or a 0. A "1" means that the person was in a car crash. A zero means that the person was not in a car crash. The second response variable is TARGET_AMT. This value is zero if the person did not crash their car. But if they did crash their car, this number will be a value greater than zero
+In this homework assignment, we will explore, analyze and model a data set containing approximately 8000 records representing a customer at an auto insurance company. Each record has two response variables. The first response variable, `TARGET_FLAG`, is a 1 or a 0. A "1" means that the person was in a car crash. A zero means that the person was not in a car crash. The second response variable is `TARGET_AMT`. This value is zero if the person did not crash their car. But if they did crash their car, this number will be a value greater than zero
 
 ## Dependencies
 
 Replication of our work requires the following packages in Rstudio:
 
-
-```{r, echo = TRUE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
-#install.packages('corrplot')
-#install.packages('randomForest')  
-
-require(ggplot2)
-require(dplyr)
-require(tidyr)
-require(corrplot)
-require(randomForest)
-require(olsrr)
-require(forecast)
-```
-
 ```{r, echo=F, message=F, warning=F, error=F, comment=F}
+# Set working directory
+try(setwd("~/GitHub/621/HW4"))
 
 # Requirements for formatting and augmenting default settings for chunks. 
 library(knitr)
@@ -45,128 +33,223 @@ knitr::opts_chunk$set(echo=F, message=F, warning=F, error=F, comment=F)
 
 default(kable_styling)  <- list(bootstrap_options = c("basic"), 
                                 position = "center", 
-                                full_width = T,
+                                full_width = F,
                                 font_size = NULL)
 
 default(row_spec)  <- list(row = 0:0, bold = T)
 ```
 
 ```{r, echo=T}
-library(ggplot2)
-library(ggpubr)
-library(dplyr)
-library(tidyr)
+# analyze data
 library(corrplot)
 library(randomForest)
 library(olsrr)
 library(psych)
+
+#organize data
+library(dplyr)
+library(tidyr)
+
+#visualize data
+library(reshape2)
+library(ggplot2)
+library(ggpubr)
+
+# dummy variables
+library(sjmisc)
 ```
 
 ## Objective 
 
 Our objective is to build multiple linear regression and binary logistic regression models on the `training` data to predict the probability that a person will crash their car and also the amount of money it will cost if the person does crash their car.
 
-# PART 1: DATA EXPLORATION
+# DATA PREPARATION
 
-First, we read the data as a csv and then examined the below variable from the `training` dataset. 
+The following chart outlines the variable imported from the `training.csv` dataset. 
 
 ```{r}
+
 training <- as.data.frame(read.csv("insurance_training_data.csv"))
 test <- as.data.frame(read.csv("insurance-evaluation-data.csv"))
+training<-training[,-1]
 
 include_graphics("./hw4_vars.jpg")
 ```
 
+## DATA CLEANING
 
-## Summary Statistics 
-
-We look at summary of the data below. Note that rows marked with `*` indicate categorical variables that were converted to numeric.   
+During our initial review, we recognized that the dataset required cleaning before further analysis and exploration. 
 
 ```{r}
-training<-training[,-1]
-summary <- round(describe(training, skew = F), 2)
-
-summary %>% kable() %>% kable_styling()
+summary(str(training))
 ```
 
-From this, we can see that some variables have missing values, so we will have to impute them later. For `HOME_VAL` and `INCOME` values, we imputed them as the mean, which doesn't change the variance. However, this assumes that these people have both income and homes. If not, this would bias our models.   
+### Regular Expression 
 
-We must also convert the currency data to a numeric form. One record has a car age of -3, which was also replaced with the mean. There are 4 records where `JOB` is blank, which will be treated as its own category.
+We first convered the `INCOME`, `HOMEVAL`, `BLUEBOOK`, and `OLDCLAIM` varaibles from factors to numeric by removing currency characters from the dataset. 
 
-```{r}
-training$TARGET_FLAG<-as.factor(training$TARGET_FLAG)
-
+```{r, echo=T}
+# Remove currency characters from dataset 
 training$HOME_VAL<-as.numeric(gsub(",","",(gsub("\\$","",as.character(training$HOME_VAL)))))
-
 training$INCOME<-as.numeric(gsub(",","",(gsub("\\$","",as.character(training$INCOME)))))
-
 training$BLUEBOOK<-as.numeric(gsub(",","",(gsub("\\$","",as.character(training$BLUEBOOK)))))
-
 training$OLDCLAIM<-as.numeric(gsub(",","",(gsub("\\$","",as.character(training$OLDCLAIM)))))
+
+# Remove "z_" characters from dataset
+training$MSTATUS<-gsub("z_","",as.character(training$MSTATUS))
+training$URBANICITY<-gsub("z_","",as.character(training$URBANICITY))
+training$CAR_TYPE<-gsub("z_","",as.character(training$CAR_TYPE))
+training$EDUCATION<-gsub("z_","",as.character(training$EDUCATION))
+training$JOB<-gsub("z_","",as.character(training$JOB))
 ```
+
+### Imputation 
+
+For the following incomplete cases, we replaced the value of `NULL` data with the mean of the relevant data vector.
+
+```{r}
+trainNA <- training %>%
+  summarise_all(funs(sum(is.na(.)))) %>% gather() 
+
+trainNA[rowSums(trainNA > 0)>1,] %>% kable() %>% kable_styling()
+```
+
 
 ```{r, echo=T}
 for(i in c(4,6,7,9,24)){
   training[is.na(training[,i]), i] <- mean(training[,i], na.rm = TRUE)
 }
-
-
-training$CAR_AGE[training$CAR_AGE<0] <- mean(training$CAR_AGE)
-
-training$CAR_AGE[training$CAR_AGE<0]
-
-training$JOB[training$JOB=='']
 ```
 
-## Density
+We found that mean imputation of the `HOME_VAL` and `INCOME` values do not change the variance. However, this assumes that these people have both income and homes. If not, this would bias our models.  
 
-Below, we examine the distribution of values for each of the variables.
+We also found one record in which car age was less than zero. We also choose to impute this value with its corresponding mean. 
+
+```{r, echo=T}
+training$CAR_AGE[training$CAR_AGE<0] <- mean(training$CAR_AGE)
+```
+
+### Binary Variables 
+
+We then converted `PARENT1`, `MSTATUS`, `SEX`, `CAR_USE`, `RED_CAR`, `REVOKED`, and `URBANICITY` into binary variables. 
+
+```{r, echo=T}
+training <- training %>% 
+  mutate(PARENT1 = ifelse(PARENT1 == "No", 0, 1)) %>%
+  mutate(PARENT1=as.factor(PARENT1)) %>% 
+  mutate(MSTATUS = ifelse(MSTATUS == "No", 0, 1)) %>%
+  mutate(MSTATUS=as.factor(MSTATUS)) %>% 
+  mutate(SEX = ifelse(SEX == "M", 0, 1)) %>%
+  mutate(SEX=as.factor(SEX)) %>% 
+  mutate(CAR_USE = ifelse(CAR_USE == "Commercial", 0, 1)) %>%
+  mutate(CAR_USE=as.factor(CAR_USE)) %>% 
+  mutate(RED_CAR = ifelse(RED_CAR == "no", 0, 1)) %>%
+  mutate(RED_CAR=as.factor(RED_CAR)) %>% 
+  mutate(REVOKED = ifelse(REVOKED == "No", 0, 1)) %>%
+  mutate(REVOKED=as.factor(REVOKED)) %>% 
+  mutate(URBANICITY = ifelse(URBANICITY == "Highly Rural/ Rural", 0, 1)) %>%
+  mutate(URBANICITY=as.factor(URBANICITY))
+```
+
+### Dummy Variables 
+
+Lastly, we changed the factors in the `CAR_TYPE`, `EDUCATION`, and `JOB` variables to dummy variables. Note that we discovered `JOB` had four `NULL` values. We choose to drop these values from our analysis. 
+
+```{r, echo=T}
+training <- training %>% 
+  to_dummy(CAR_TYPE, EDUCATION, JOB, suffix = "label") %>% 
+  bind_cols(training) %>% 
+  select(TARGET_FLAG, everything()) %>%
+  select(-CAR_TYPE, -EDUCATION, -JOB, -JOB_) %>% 
+  mutate(URBANICITY=as.factor(URBANICITY))
+
+training[,1:20] <- sapply(training[,1:20],as.factor)
+```
+
+
+# DATA EXPLORATION
+
+## Summary Statistics 
+
+We look at summary of the data below. Note that the stars next to the variable names indicate which variables are factors in our new dataset. 
+
+```{r}
+round(describe(training, na.rm = F, skew = F), 2) %>% kable() %>% kable_styling()
+```
+
+## Distributions
+
+Below, we examine the distribution of variables using histograms, density plots, violin plots, and bar plots.  
+
+#### Numeric Variables Distributions
+
+Our numeric variables are shown below using the following histograms and density plots.
+
+From this output, we can tell that the variables, `AGE` and `YOJ`, appear to be fairly normally distributed. However, `CLM_FREQ`, `HOME_VAL`, `HOME_KIDS`, `KIDSDRIV`, and `MVR_PTS` appear to follow either a continuous or discrete quasi-Poisson process.  
+
+In any case, `CLM_FREQ`, `HOME_KIDS`, `KIDSDRIV`, `MVR_PTS`, `OLDCLAIM`, `TIF`, `TRAVTIME`, and `YOJ` are count values. Log transforms will be inappropriate and would skew this data.
 
 ```{r, fig.height=5}
 training %>%
   select_if(is.numeric) %>%               # Keep only numeric columns
   gather() %>%                            # Convert to key-value pairs
   ggplot(aes(value)) +                    # Plot the values
-    facet_wrap(~key, scales = "free") +  # In separate panels
-    geom_density() 
+  geom_histogram(aes(y =..density..,      # Histogram plot
+                     fill=..count..))+
+  geom_density(col="black") +             # Density plot
+  scale_fill_gradient()+                  # Apply gradient to count
+  facet_wrap(~key, ncol = 3,              # Plot in separate panels
+             scales = 'free') 
 ```
 
+#### Binary Variable Distribution 
 
-Variables, `AGE` and `YOJ`, appear to be fairly normally distributed. However, `CLM_FREQ`, `HOME_VAL`, `HOME_KIDS`, `KIDSDRIV`, and `MVR_PTS` appear to follow either a continuous or discrete quasi-Poisson process.  
+The following violin plots show the distribution of our binary variables. 
 
-
-
-```{r fig.height=8}
+```{r fig.height=4}
 p1 <- ggplot(training, aes(x=TARGET_FLAG, y=log(TARGET_AMT+1))) + geom_violin()
-
 p2 <- ggplot(training, aes(x=MSTATUS, y=log(TARGET_AMT+1))) + geom_violin()
-
 p3 <- ggplot(training, aes(x=SEX, y=log(TARGET_AMT+1))) + geom_violin()
+p4 <- ggplot(training, aes(x=CAR_USE, y=log(TARGET_AMT+1))) + geom_violin()
+p5 <- ggplot(training, aes(x=RED_CAR, y=log(TARGET_AMT+1))) +  geom_violin()
+p6 <- ggplot(training, aes(x=REVOKED, y=log(TARGET_AMT+1))) + geom_violin()
+p7 <- ggplot(training, aes(x=URBANICITY, y=log(TARGET_AMT+1))) + geom_violin()
+p8 <- ggplot(training, aes(x=PARENT1, y=log(TARGET_AMT+1))) + geom_violin()
 
-p4 <- ggplot(training, aes(x=EDUCATION, y=log(TARGET_AMT+1))) + geom_violin()
 
-p5 <- ggplot(training, aes(x=CAR_USE, y=log(TARGET_AMT+1))) + geom_violin()
+ggarrange(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 4, nrow = 2)
+```
 
-p6 <- ggplot(training, aes(x=CAR_TYPE, y=log(TARGET_AMT+1))) + geom_violin()
+#### Dummy Variable Distributions
 
-p7 <- ggplot(training, aes(x=RED_CAR, y=log(TARGET_AMT+1))) +  geom_violin()
+```{r, fig.height=3}
+car <- training %>% select(TARGET_FLAG, starts_with("CAR_TYPE")) %>% melt(id.vars = "TARGET_FLAG")
 
-p8 <- ggplot(training, aes(x=REVOKED, y=log(TARGET_AMT+1))) + geom_violin()
+ggplot(car) +
+  geom_bar(aes(value, fill=variable)) + 
+  facet_wrap(~variable, scales="free_x", ncol=3)+
+  ggtitle("CAR_TYPE")
 
-p9 <- ggplot(training, aes(x=URBANICITY, y=log(TARGET_AMT+1))) + geom_violin()
+educ <- training %>% select(TARGET_FLAG, starts_with("EDUCATION")) %>% melt(id.vars = "TARGET_FLAG")
 
-p10 <- ggplot(training, aes(x=PARENT1, y=log(TARGET_AMT+1))) + geom_violin()
+ggplot(educ) +
+  geom_bar(aes(value, fill=variable)) + 
+  facet_wrap(~variable, scales="free_x", ncol=3)+
+  ggtitle("EDUCATION")
 
-p11 <- ggplot(training, aes(x=JOB, y=log(TARGET_AMT+1))) + geom_violin()
+job <- training %>% select(TARGET_FLAG, starts_with("JOB")) %>% melt(id.vars = "TARGET_FLAG")
 
-ggarrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, ncol = 2, nrow = 6)
+ggplot(job) +
+  geom_bar(aes(value, fill=variable)) + 
+  facet_wrap(~variable, scales="free_x", ncol=4)+
+  ggtitle("JOB")
 ```
 
 ## Scatter plot matrix
 
 We then build scatter plot matrix for continious variables
 
-```{r, fig.height=5}
+```{r, fig.height=4}
 training %>% 
   select_if(is.numeric) %>%
   pairs.panels(
@@ -180,7 +263,7 @@ training %>%
 
 We can see our correlation matrix below. A dark blue circle represents a strong positive relationship and a dark red circle represents a strong negative relationship between two variables. 
 
-```{r, fig.height=5}
+```{r, fig.height=4}
 results1 <- training %>%
   select_if(is.numeric) %>% 
   cor(method = 'pearson', use = 'complete.obs')
@@ -190,12 +273,12 @@ corrplot(results1, method = 'circle')
 
 Finally, we can use the `randomforest` package to verify our assumptions from the correlation plot.
 
-```{r, fig.height=6}
+```{r}
 training2 <- training
 training2$TARGET_AMT<- NULL
 training2$TARGET_FLAG<- NULL
 target1 <- training$TARGET_AMT
-target2 <- training$TARGET_FLAG
+target2 <- as.numeric(training$TARGET_FLAG)
 
 fit1 <- randomForest(training2, target1, importance = TRUE, ntree = 50)
 
@@ -207,190 +290,6 @@ varImpPlot(fit2)
 ```
 
 
-# PART 2: DATA PREPARATION
-
-In the following section we will prepare and transform our variables for our model. 
-
-## Clean Data 
-
-For incomplete cases, we replaced the value of `NULL` data with the mean of the relevant data vector.
-
-```{r}
-training$AGE[is.na(training$AGE)] <- mean(training$AGE, na.rm=TRUE)
-
-training$YOJ[is.na(training$YOJ)] <- mean(training$YOJ, na.rm=TRUE)
-
-training$HOME_VAL[is.na(training$HOME_VAL)] <- mean(training$HOME_VAL, na.rm=TRUE)
-
-training$CAR_AGE[is.na(training$CAR_AGE)] <- mean(training$CAR_AGE, na.rm=TRUE)
-
-training$INCOME[is.na(training$INCOME)] <- mean(training$INCOME, na.rm=TRUE)
-```
-
-We must also convert all of the categorical variables into numerical ones. Additionally, we've removed the JOB column since it is strongly correlated with income.
-```{r}
-
-
-```
-
-```{r, echo = FALSE}
-options(warn = -1)
-
-target_flag <- training$TARGET_FLAG
-target_amt  <- training$TARGET_AMT
-
-training$TARGET_FLAG <- NULL
-training$TARGET_AMT  <- NULL
-
-
-training <- data.frame(training, stringsAsFactors = TRUE)
-
-training <- data.frame(lapply(training, function(x){
-  gsub("z_", "", x)
-  
-}))
-training <- data.frame(lapply(training, function(x){
-  gsub("<High School", "High School", x)
-  
-}))
-training <- data.frame(lapply(training, function(x){
-  gsub("z_", "", x)
-  
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("No", "0", x)
-  
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("Yes", "1", x)
-  
-}))
-
-
-training <- data.frame(lapply(training, function(x){
-  gsub("Highly Urban/ Urban", "1", x)
-  
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("Highly Urban/ Urban", 1, x)
-  
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("Highly Rural/ Rural", 0, x)
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("Private", 0, x)
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("Commercial", 1, x)
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("High School", 1, x)
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("Bachelors", 2, x)
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("Masters", 3, x)
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("PhD", 4, x)
-}))
-
-training$JOB <- NULL #Highly colinear with income
-
-training$CAR_TYPE <- as.factor(as.character(training$CAR_TYPE))
-
-training <- suppressWarnings(dummy_cols(training, select_columns = "CAR_TYPE"))
-
-training$CAR_TYPE <- NULL
-training$CAR_TYPE_Minivan <- as.numeric(as.character(training$CAR_TYPE_Minivan))
-training$CAR_TYPE_Minivan[is.na(x = training$CAR_TYPE_Minivan)] <- 0
-
-training$CAR_TYPE_SUV <- as.numeric(as.character(training$CAR_TYPE_SUV))
-training$CAR_TYPE_SUV[is.na(x = training$CAR_TYPE_SUV)] <- 0
-
-training$CAR_TYPE_Sports.Car <- as.numeric(as.character(training$CAR_TYPE_Sports.Car))
-training$CAR_TYPE_Sports.Car[is.na(x = training$CAR_TYPE_Sports.Car)] <- 0
-
-training$CAR_TYPE_Van <- as.numeric(as.character(training$CAR_TYPE_Van))
-training$CAR_TYPE_Van[is.na(x = training$CAR_TYPE_Van)] <- 0
-
-
-training$CAR_TYPE_Panel.Truck <- as.numeric(as.character(training$CAR_TYPE_Panel.Truck))
-training$CAR_TYPE_Panel.Truck[is.na(x = training$CAR_TYPE_Panel.Truck)] <- 0
-
-
-training$CAR_TYPE_Pickup <- as.numeric(as.character(training$CAR_TYPE_Pickup))
-training$CAR_TYPE_Pickup[is.na(x = training$CAR_TYPE_Pickup)] <- 0
-
-training <- data.frame(lapply(training, function(x){
-  gsub('NA', 0, x)
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("M", 1, x)
-}))
-training <- data.frame(lapply(training, function(x){
-  gsub("F", 0, x)
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("no", 0, x)
-}))
-
-training <- data.frame(lapply(training, function(x){
-  gsub("yes", 1, x)
-}))
-
-
-training$COMMERCIAL_USE <- training$CAR_USE
-training$CAR_USE <- NULL
-
-training$IS_MALE <- training$SEX
-training$SEX <- NULL
-training <- data.frame(lapply(training, function(x){
-  as.numeric(as.character(x))
-  replace_na(x, replace = 0)
-}))
-training
-```
-```{r}
-
-
-```
-Because the data has many different orders of magnitude, we will normalize, scale, and center the data for use in our linear models. Then we applied a BoxCox transformation to each vector so that we can approximate a normal distribution
-
-```{r}
-training <- data.frame(lapply(training, function(x){
-  normalize(x, method = "standardize")
-  BoxCox(x, lambda = BoxCox.lambda(x))
-}))
-
-```
-
-## Bucket Transformations
-
-Transform data by putting it into buckets. 
-
-## Mathematical Transformations 
-
-Log or square root (or use Box-Cox) where applicable. 
-
-## New Variables 
-
-Combine variables (such as ratios or adding or multiplying) to create new variables 
-
 # PART 3. BUILD MODELS
 
 Using the transformed data above, we developed two multiple linear regression and three binary logistic regression models. Through these models, we hope to predict **(1)** the probability that a person will crash their car and **(2)** the amount of money it will cost if the person does crash their car.
@@ -400,41 +299,76 @@ Using the transformed data above, we developed two multiple linear regression an
 MLR for `TARGET_AMT`.
 
 ### MLR 1
-[] Create Model #1  
-[] Describe the techniques you used.
-[] Show summarised results  
 
+The following MLR model seeks to predict `TARGET_AMT` using all variables. 
+
+```{r, echo=F}
+lm_train <- training %>% select(-TARGET_FLAG)
+lm1<- lm(TARGET_AMT~., lm_train)
+summary(lm1)
+```
+
+#### Model Analysis 
+
+The low f-statistic suggests a weak relationship when using all predicted and response variables. The Adjusted R^2 value of 0.06681 means that only 6.681% of the variance observed in the `TARGET_AMT` variable can be explained when using all response variables.  
+
+Additionally, all variables show small t-statistics, which means there is a higher degree of variability in the coefficient estimates for all variables with the exceptions of the following: 
+
+```{r}
+tstat <- as.data.frame(summary(lm1)$coefficients[,3])
+
+names(tstat)[1] <- "tstat"
+
+tstat %>% subset(tstat >5) %>% kable() %>% kable_styling()
+```
+From this model, only the following variables had significance levels less than 0.05%. 
+
+```{r}
+pval <- as.data.frame(summary(lm1)$coefficients[,4])
+names(pval)[1] <- "pval"
+
+pval %>% subset(pval < .05) %>% round(4) %>% kable() %>% kable_styling()
+```
+
+The residual plots below show that our data as is should not be used for linear modeling without futher data transformations. The normality assumption for linear regression is not met as the residuals do not follow a straight line and the data does not meet homoscedastic assumption. The line is not horizontal and the residuals are not randomly-distributed around it.  
+
+```{r, fig.height=4}
+layout(matrix(c(1,3,2,4),2,2)) 
+plot(lm1)
+```
 ### MLR 2
-[] Create Model #2  
-[] Describe the techniques you used. 
-[] Show summarised results  
 
-### MLR ANALYSIS 
+The following model is based off of the variables in model 1 with high t- and significant p-values. 
 
-Discuss the coefficients in the models, do they make sense? For example, if a person has a lot of traffic tickets, you would reasonably expect that person to have more car crashes. If the coefficient is negative (suggesting that the person is a safer driver), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why?
+```{r, echo=F}
+lm2<- lm(TARGET_AMT~CAR_TYPE_Minivan+KIDSDRIV+INCOME+PARENT1+MSTATUS+SEX+TRAVTIME+CAR_USE+TIF+CLM_FREQ+REVOKED+MVR_PTS+CAR_AGE+URBANICITY, lm_train)
+summary(lm2)
+```
+
+#### Model Analysis
+
+Changing the coefficients increased our f-statistic, however the R-square value is still too low to make inference from this model. Our residual plots still show our model is not appropriate for linear regression. 
+
+```{r}
+layout(matrix(c(1,3,2,4),2,2)) 
+plot(lm2)
+```
 
 ## Binary Logistic Regression
 
-BLR for `TARGET_FLAG`
+### MODEl 1
 
-### BLR 1
-[] Create Model #1  
-[] Describe the techniques you used.
-[] Show summarised results  
 
-### BLR 2
-[] Create Model #2  
-[] Describe the techniques you used.
-[] Show summarised results  
+### MODEl 2
 
-### BLR 3
-[] Create Model #3  
-[] Describe the techniques you used.
-[] Show summarised results  
 
-### BLR ANALYSIS 
+## AIC, BIC, LOglik, pseudoR2
 
-Discuss the coefficients in the models, do they make sense? For example, if a person has a lot of traffic tickets, you would reasonably expect that person to have more car crashes. If the coefficient is negative (suggesting that the person is a safer driver), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why?
+## Choosing the best model and applying it on test data set
+
+
+## Assessing the performance of the choosen model: ROC and AUC
+
 
 # PART 4: SELECT MODELS 
 
@@ -477,3 +411,4 @@ Use a metric such as log likelihood, AIC, ROC curve, etc. Using the training dat
 ## Predictions 
 
 Make predictions using the evaluation data set. 
+
