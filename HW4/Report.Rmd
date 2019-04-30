@@ -71,6 +71,10 @@ require(tidyr)
 require(corrplot)
 require(randomForest)
 require(olsrr)
+require(doRNG) #bestNormalize dependency
+require(bestNormalize)
+require(fastDummies)
+require(forecast)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE, comment=FALSE}
@@ -262,7 +266,19 @@ training$INCOME[is.na(training$INCOME)] <- mean(training$INCOME, na.rm=TRUE)
 
 We must also convert all of the education categories into numerical ones.
 
-```{r}
+
+```{r, echo = FALSE}
+options(warn = -1)
+
+target_flag <- training$TARGET_FLAG
+target_amt  <- training$TARGET_AMT
+
+training$TARGET_FLAG <- NULL
+training$TARGET_AMT  <- NULL
+
+
+training <- data.frame(training, stringsAsFactors = TRUE)
+
 training <- data.frame(lapply(training, function(x){
   gsub("z_", "", x)
   
@@ -275,6 +291,118 @@ training <- data.frame(lapply(training, function(x){
   gsub("z_", "", x)
   
 }))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("No", "0", x)
+  
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("Yes", "1", x)
+  
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("No", "0", x)
+  
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("Highly Urban/ Urban", "1", x)
+  
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("Highly Urban/ Urban", 1, x)
+  
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("Highly Rural/ Rural", 0, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("Private", 0, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("Commercial", 1, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("High School", 1, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("Bachelors", 2, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("Masters", 3, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("PhD", 4, x)
+}))
+
+#training$JOB[is.na(training$JOB)] <- "None"
+#training$JOB
+
+training$JOB <- as.factor(training$JOB)
+
+training <- suppressWarnings(dummy_cols(training, select_columns = "JOB"))
+
+training$JOB <- NULL
+
+training <- data.frame(lapply(training, function(x){
+  gsub('NA', 0, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("M", 1, x)
+}))
+training <- data.frame(lapply(training, function(x){
+  gsub("F", 0, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("no", 0, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  gsub("yes", 1, x)
+}))
+
+training <- data.frame(lapply(training, function(x){
+  as.numeric(x)
+}))
+
+training$JOB_ <- NULL
+
+
+training$COMMERCIAL_USE <- training$CAR_USE
+training$CAR_USE <- NULL
+
+training$IS_MALE <- training$SEX
+training$SEX <- NULL
+training
+```
+```{r}
+
+#training <- data.frame(lapply(training, function(x){
+#  gsub(NA, 0, x)
+#}))
+
+
+```
+Because the data has many different orders of magnitude, we will normalize, scale, and center the data for use in our linear models. Then we applied a BoxCox transformation to each vector so that we can approximate a normal distribution
+
+```{r}
+training <- data.frame(lapply(training, function(x){
+  normalize(x, method = "standardize")
+  BoxCox(x, lambda = BoxCox.lambda(x))
+}))
+
 ```
 
 
