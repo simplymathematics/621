@@ -1,0 +1,11 @@
+base
+knitr
+kableExtra
+default
+psych
+randomForest
+corrplot
+dplyr
+tidyr
+ggplot2
+reshape2
