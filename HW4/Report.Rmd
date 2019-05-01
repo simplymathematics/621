@@ -394,14 +394,6 @@ layout(matrix(c(1,3,2,4),2,2))
 plot(lm2)
 ```
 
-### Model 3
-
-```{r}
-lm3<- glm(TARGET_AMT~CAR_TYPE_Minivan+KIDSDRIV+INCOME+PARENT1+MSTATUS+SEX+TRAVTIME+CAR_USE+TIF+CLM_FREQ+REVOKED+MVR_PTS+CAR_AGE+URBANICITY, family = "gaussian", method = "glm.fit", data = lm_train)
-summary(lm3)
-
-```
-
 
 ## Binary Logistic Regression
 
@@ -429,7 +421,7 @@ TODO: talk about coefficients in linear model
 ```{r}
 lm.summary1 <- summary(lm1)
 lm.summary2 <- summary(lm2)
-lm.summary3 <- summary(lm3)
+
 ```
 
 ### R Square
@@ -437,7 +429,7 @@ lm.summary3 <- summary(lm3)
 ```{r}
 lm.summary1$r.squared
 lm.summary2$r.squared
-lm.summary3$r.squared
+
 ```
 
 ### Adjusted R2
@@ -445,7 +437,7 @@ lm.summary3$r.squared
 ```{r}
 lm.summary1$adj.r.squared
 lm.summary2$adj.r.squared
-lm.summary3$adj.r.squared
+
 ```
 
 
@@ -453,7 +445,7 @@ lm.summary3$adj.r.squared
 ```{r}
 lm.summary1$fstatistic
 lm.summary2$fstatistic
-lm.summary3$fstatistic
+
 ```
 
 
@@ -464,7 +456,7 @@ lm.summary3$fstatistic
 ```{r}
 plot(lm.summary1$residuals)
 plot(lm.summary2$residuals)
-plot(lm.summary3$r.squared)
+
 ```
 
 Noticeably, the vast majority of our error lies in the region where the Z-score is greater than 2. This means that our model has strong predictive power for relatively safe drivers and very poor predictive power for the riskiest of drivers. Additionally, since our model consistently under-predicts the cost associated with the most dangerous drivers, we could easily deny them coverage and move on with our lives. The tendency for risky drivers to have accidents that far out-pace the cost of a signle vehicle has to do with their propensity to be involved in catastrophic accidents that cause more damage than the cost of a single vehicle, cementing our stance that these people should simply not be insured.
@@ -511,6 +503,13 @@ list(accuracy=acc, error_rate=err, precision=prec, sensitivity=sens, specificity
 
 
 
+
+
+
+## Predictions 
+
+Logistic Model
+
 ```{r}
 test$TARGET_AMT <- NULL
 labels <- test$TARGET_FLAG
@@ -520,10 +519,11 @@ test$INDEX <- NULL
 pred1 <- predict(model_1, test)
 ```
 
+Linear Model
 
-## Predictions 
-
-TODO:
-make predictions. Don't forget to run data through the transforms as well. 
-
-Make predictions using the evaluation data set. 
+```{r}
+testing$INCOME <- as.numeric(testing$INCOME)
+pred.linear <- predict(lm2, testing)
+testing$TARGET_AMT <- pred.linear
+write.csv(testing, "predictions.csv")
+```
