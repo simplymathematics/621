@@ -348,7 +348,7 @@ The following MLR model seeks to predict `TARGET_AMT` using all variables.
 lm_train <- training %>% select(-TARGET_FLAG)
 select_if(lm_train, is.numeric)
 
-lm_train <- 
+
 
 
 lm1<- lm(TARGET_AMT~., lm_train)
@@ -388,7 +388,6 @@ plot(lm1)
 The following model is based off of the variables in model 1 with high t- and significant p-values. 
 
 ```{r, echo=F}
-lm_train$I
 
 lm2<- lm(TARGET_AMT~CAR_TYPE_Minivan+KIDSDRIV+INCOME+PARENT1+MSTATUS+SEX+TRAVTIME+CAR_USE+TIF+CLM_FREQ+REVOKED+MVR_PTS+CAR_AGE+URBANICITY, lm_train)
 summary(lm2)
