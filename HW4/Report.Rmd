@@ -320,13 +320,6 @@ training$HOME_VAL <- as.numeric(as.character(training$HOME_VAL))
 training$INCOME <- BoxCox(training$INCOME, lambda = BoxCox.lambda(training$INCOME))
 training$HOME_VAL <- BoxCox(training$HOME_VAL, lambda = BoxCox.lambda(training$HOME_VAL))
 
-testing$INCOME   <- as.numeric(as.character(testing$INCOME))
-testing$HOME_VAL <- as.numeric(as.character(testing$HOME_VAL))
-
-testing$INCOME <- BoxCox(testing$INCOME, lambda = BoxCox.lambda(testing$INCOME))
-testing$HOME_VAL <- BoxCox(testing$HOME_VAL, lambda = BoxCox.lambda(testing$HOME_VAL))
-
-
 ```
 
 
@@ -388,7 +381,6 @@ plot(lm1)
 The following model is based off of the variables in model 1 with high t- and significant p-values. 
 
 ```{r, echo=F}
-
 lm2<- lm(TARGET_AMT~CAR_TYPE_Minivan+KIDSDRIV+INCOME+PARENT1+MSTATUS+SEX+TRAVTIME+CAR_USE+TIF+CLM_FREQ+REVOKED+MVR_PTS+CAR_AGE+URBANICITY, lm_train)
 summary(lm2)
 ```
