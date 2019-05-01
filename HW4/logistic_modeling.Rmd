@@ -318,6 +318,8 @@ test$predict<-predict(model_1, test, type='response')
 par(pty = "s")
 pROC <- roc(test$TARGET_FLAG, test$predict,
 smooth=FALSE, plot = TRUE, print.auc=TRUE,legacy.axes =TRUE,  col="red", main ="ROC Curve")
+
+save(list = ls(all= TRUE), file = "logistic_object.Rdata")
 ```
 
 

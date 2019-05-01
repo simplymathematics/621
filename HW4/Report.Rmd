@@ -21,13 +21,13 @@ In this homework assignment, we will explore, analyze and model a data set conta
 Replication of our work requires the following packages in Rstudio:
 
 ```{r, echo=F, message=F, warning=F, error=F, comment=F}
-# Set working directory
-try(setwd("~/GitHub/621/HW4"))
 
 # Requirements for formatting and augmenting default settings for chunks. 
 library(knitr)
 library(kableExtra)
 library(default)
+library(BBmisc)
+library(forecast)
 
 knitr::opts_chunk$set(echo=F, message=F, warning=F, error=F, comment=F) 
 
@@ -70,7 +70,7 @@ The following chart outlines the variable imported from the `training.csv` datas
 ```{r}
 
 training <- as.data.frame(read.csv("insurance_training_data.csv"))
-test <- as.data.frame(read.csv("insurance-evaluation-data.csv"))
+testing <- as.data.frame(read.csv("insurance-evaluation-data.csv"))
 training<-training[,-1]
 
 include_graphics("./hw4_vars.jpg")
@@ -149,6 +149,22 @@ training <- training %>%
   mutate(REVOKED=as.factor(REVOKED)) %>% 
   mutate(URBANICITY = ifelse(URBANICITY == "Highly Rural/ Rural", 0, 1)) %>%
   mutate(URBANICITY=as.factor(URBANICITY))
+
+testing <- testing %>% 
+  mutate(PARENT1 = ifelse(PARENT1 == "No", 0, 1)) %>%
+  mutate(PARENT1=as.factor(PARENT1)) %>% 
+  mutate(MSTATUS = ifelse(MSTATUS == "No", 0, 1)) %>%
+  mutate(MSTATUS=as.factor(MSTATUS)) %>% 
+  mutate(SEX = ifelse(SEX == "M", 0, 1)) %>%
+  mutate(SEX=as.factor(SEX)) %>% 
+  mutate(CAR_USE = ifelse(CAR_USE == "Commercial", 0, 1)) %>%
+  mutate(CAR_USE=as.factor(CAR_USE)) %>% 
+  mutate(RED_CAR = ifelse(RED_CAR == "no", 0, 1)) %>%
+  mutate(RED_CAR=as.factor(RED_CAR)) %>% 
+  mutate(REVOKED = ifelse(REVOKED == "No", 0, 1)) %>%
+  mutate(REVOKED=as.factor(REVOKED)) %>% 
+  mutate(URBANICITY = ifelse(URBANICITY == "Highly Rural/ Rural", 0, 1)) %>%
+  mutate(URBANICITY=as.factor(URBANICITY))
 ```
 
 ### Dummy Variables 
@@ -164,6 +180,15 @@ training <- training %>%
   mutate(URBANICITY=as.factor(URBANICITY))
 
 training[,1:20] <- sapply(training[,1:20],as.factor)
+
+testing <- testing %>% 
+  to_dummy(CAR_TYPE, EDUCATION, JOB, suffix = "label") %>% 
+  bind_cols(testing) %>% 
+  select(TARGET_FLAG, everything()) %>%
+  select(-CAR_TYPE, -EDUCATION, -JOB, -JOB_) %>% 
+  mutate(URBANICITY=as.factor(URBANICITY))
+
+testing[,1:20] <- sapply(testing[,1:20],as.factor)
 ```
 
 
@@ -185,9 +210,8 @@ Below, we examine the distribution of variables using histograms, density plots,
 
 Our numeric variables are shown below using the following histograms and density plots.
 
-From this output, we can tell that the variables, `AGE` and `YOJ`, appear to be fairly normally distributed. However, `CLM_FREQ`, `HOME_VAL`, `HOME_KIDS`, `KIDSDRIV`, and `MVR_PTS` appear to follow either a continuous or discrete quasi-Poisson process.  
+TODO: Justify and do data transformations for MLR
 
-In any case, `CLM_FREQ`, `HOME_KIDS`, `KIDSDRIV`, `MVR_PTS`, `OLDCLAIM`, `TIF`, `TRAVTIME`, and `YOJ` are count values. Log transforms will be inappropriate and would skew this data.
 
 ```{r, fig.height=5}
 training %>%
@@ -288,6 +312,14 @@ fit2 <- randomForest(training2, target2, importance = TRUE, ntree = 50)
 
 varImpPlot(fit2)
 ```
+## Data transformations
+
+```{r}
+training <- as.data.frame(training)
+
+```
+
+
 
 
 # PART 3. BUILD MODELS
@@ -304,6 +336,11 @@ The following MLR model seeks to predict `TARGET_AMT` using all variables.
 
 ```{r, echo=F}
 lm_train <- training %>% select(-TARGET_FLAG)
+select_if(lm_train, is.numeric)
+
+lm_train <- 
+
+
 lm1<- lm(TARGET_AMT~., lm_train)
 summary(lm1)
 ```
@@ -354,45 +391,104 @@ layout(matrix(c(1,3,2,4),2,2))
 plot(lm2)
 ```
 
+### Model 3
+
+```{r}
+lm3<- glm(TARGET_AMT~CAR_TYPE_Minivan+KIDSDRIV+INCOME+PARENT1+MSTATUS+SEX+TRAVTIME+CAR_USE+TIF+CLM_FREQ+REVOKED+MVR_PTS+CAR_AGE+URBANICITY, family = "gaussian", method = "glm.fit", data = lm_train)
+summary(lm3)
+
+```
+
+
 ## Binary Logistic Regression
 
-### MODEl 1
+We tested several logistic models both before and after transforming the data in various ways. Further information can be found the the logistic_modeling.Rmd appendix. The model with the best performance used the raw data, without any transformations. Below, we import it into this file as an R object to help us draw conclusions.
 
 
-### MODEl 2
+```{r, echo = FALSE}
+load(file = "logistic_object.Rdata")
+model_1
 
-
-## AIC, BIC, LOglik, pseudoR2
-
-## Choosing the best model and applying it on test data set
-
-
-## Assessing the performance of the choosen model: ROC and AUC
-
-
-# PART 4: SELECT MODELS 
-
-Select the best multiple linear regression model and the best binary logistic regression model. Discuss why you selected your models. 
+```
 
 ## MLR Evaluation 
 
 Use a metric such as Adjusted R2, RMSE, etc. Explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output.  
 
-Using the training data set, evaluate the multiple linear regression model based on: 
+Using the training data set, evaluate the multiple linear regression model based on:
 
-### Mean Squared Error
+### Coefficient Analysis
 
-### R2
+TODO: Write about this
+
+```{r}
+lm.summary1 <- summary(lm1)
+lm.summary2 <- summary(lm2)
+```
+
+### R Square
+
+```{r}
+lm.summary1$r.squared
+lm.summary2$r.squared
+```
+
+### Adjusted R2
+
+```{r}
+lm.summary1$adj.r.squared
+lm.summary2$adj.r.squared
+
+```
+
 
 ### F-statistic
+```{r}
+lm.summary1$fstatistic
+lm.summary2$fstatistic
+
+```
+
+
+
 
 ### Residual plots. 
 
+```{r}
+plot(lm.summary1$residuals)
+plot(lm.summary2$residuals)
+
+```
+
+
+
 ## BLR Evaluation 
+
+
 
 Use a metric such as log likelihood, AIC, ROC curve, etc. Using the training data set, evaluate the binary logistic regression model based on:
 
+```{r}
+require(pROC)
+require(pscl)
+log.predict<-predict(model_1, test, type='response')
+par(pty = "s")
+pROC <- roc(test$TARGET_FLAG, log.predict,
+smooth=FALSE, plot = TRUE, print.auc=TRUE,legacy.axes =TRUE,  col="red", main ="ROC Curve")
+summary
+
+```
+
 ### Accuracy
+
+```{r}
+test$TARGET_AMT <- NULL
+labels <- test$TARGET_FLAG
+test$TARGET_FLAG <- NULL
+library(caret)
+test$INDEX <- NULL
+pred1 <- predict(model_1, test)
+```
 
 ### Classification Error Rate
 
@@ -411,4 +507,3 @@ Use a metric such as log likelihood, AIC, ROC curve, etc. Using the training dat
 ## Predictions 
 
 Make predictions using the evaluation data set. 
-
