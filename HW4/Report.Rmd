@@ -432,9 +432,8 @@ Using the training data set, evaluate the multiple linear regression model based
 ### Coefficient Analysis
 
 TODO: talk about coefficients in linear model
-TODO: talk
 
-Noticeably, the vast majority of our error lies in the region where the Z-score is greater than 2. This means that our model has strong predictive power for relatively safe drivers and very poor predictive power for the riskiest of drivers. Additionally, since our model consistently under-predicts the cost associated with the most dangerous drivers, we could easily deny them coverage and move on with our lives. The tendency for risky drivers to have accidents that far out-pace the cost of a signle vehicle has to do with their propensity to be involved in catastrophic accidents that cause more damage than the cost of a single vehicle, cementing our stance that these people should simply not be insured.
+
 
 ```{r}
 lm.summary1 <- summary(lm1)
@@ -477,7 +476,7 @@ plot(lm.summary2$residuals)
 plot(lm.summary3$r.squared)
 ```
 
-
+Noticeably, the vast majority of our error lies in the region where the Z-score is greater than 2. This means that our model has strong predictive power for relatively safe drivers and very poor predictive power for the riskiest of drivers. Additionally, since our model consistently under-predicts the cost associated with the most dangerous drivers, we could easily deny them coverage and move on with our lives. The tendency for risky drivers to have accidents that far out-pace the cost of a signle vehicle has to do with their propensity to be involved in catastrophic accidents that cause more damage than the cost of a single vehicle, cementing our stance that these people should simply not be insured.
 
 ## BLR Evaluation 
 
