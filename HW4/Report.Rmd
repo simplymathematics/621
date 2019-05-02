@@ -1,7 +1,7 @@
 ---
 title: "HW 4"
 author: "Team 2"
-date: "April 24, 2019"
+date: "May 1, 2019"
 output:
   pdf_document:
     toc: yes
@@ -45,6 +45,7 @@ library(corrplot)
 library(randomForest)
 library(olsrr)
 library(psych)
+library(caret)
 
 #organize data
 library(dplyr)
@@ -325,7 +326,7 @@ training$HOME_VAL <- BoxCox(training$HOME_VAL, lambda = BoxCox.lambda(training$H
 
 
 
-# PART 3. BUILD MODELS
+# BUILD MODELS
 
 Using the transformed data above, we developed two multiple linear regression and three binary logistic regression models. Through these models, we hope to predict **(1)** the probability that a person will crash their car and **(2)** the amount of money it will cost if the person does crash their car.
 
@@ -405,6 +406,8 @@ load(file = "logistic_object.Rdata")
 log.summary <- summary(model_1)
 log.summary
 ```
+
+# SELECT MODELS
 
 ## MLR Evaluation 
 
@@ -503,14 +506,11 @@ list(accuracy=acc, error_rate=err, precision=prec, sensitivity=sens, specificity
 
 
 
-
-
-
 ## Predictions 
 
-Logistic Model
+Logistic Model:
 
-```{r}
+```{r, echo=T}
 test$TARGET_AMT <- NULL
 labels <- test$TARGET_FLAG
 test$TARGET_FLAG <- NULL
@@ -519,9 +519,9 @@ test$INDEX <- NULL
 pred1 <- predict(model_1, test)
 ```
 
-Linear Model
+Linear Model:
 
-```{r}
+```{r, echo=T}
 testing$INCOME <- as.numeric(testing$INCOME)
 pred.linear <- predict(lm2, testing)
 testing$TARGET_AMT <- pred.linear
