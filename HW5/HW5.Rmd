@@ -1,0 +1,419 @@
+---
+title: "HW 5"
+author: "Team 2"
+date: "May 15, 2019"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    pdf_document: default
+    theme: cosmo
+    toc: yes
+    toc_float: yes
+---
+
+# OVERVIEW
+
+In this homework assignment, you will explore, analyze and model a data set containing information on approximately 12,000 commercially available wines. The variables are mostly related to the chemical properties of the wine being sold. The response variable is the number of sample cases of wine that were purchased by wine distribution companies after sampling a wine.  
+
+These cases would be used to provide tasting samples to restaurants and wine stores around the United States. The more sample cases purchased, the more likely is a wine to be sold at a high end restaurant. A large wine manufacturer is studying the data in order to predict the number of wine cases ordered based upon the wine characteristics. If the wine manufacturer can predict the number of cases, then that manufacturer will be able to adjust their wine offering to maximize sales. 
+
+## Objective 
+
+Your objective is to build a count regression model to predict the number of cases of wine that will be sold given certain properties of the wine. HINT: Sometimes, the fact that a variable is missing is actually predictive of the target. You can only use the variables given to you (or variables that you derive from the variables provided). 
+
+## Dataset
+
+Below is a short description of the variables of interest in the data set: 
+
+*  `INDEX`:  Identification Variable (do not use).
+*  `TARGET`:  Number of Cases Purchased.
+*  `AcidIndex`:   Proprietary method of testing total acidity of wine by using a weighted average.
+*  `Alcohol`:   Alcohol Content.
+*  `Chlorides`:  Chloride content of wine.
+*  `CitricAcid`:  Citric Acid Content.
+*  `Density`:  Density of Wine.
+*  `FixedAcidity`:  Fixed Acidity of Wine.
+*  `FreeSulfurDioxide`:  Sulfur Dioxide content of wine.
+*  `LabelAppeal`:  Marketing Score indicating the appeal of label design for consumers. High numbers suggest customers like the label design. Negative numbers suggest customes don't like the design.
+*  `ResidualSugar`:  Residual Sugar of wine.
+*  `STARS`:  Wine rating by a team of experts. 4 Stars = Excellent, 1 Star = Poor.
+*  `Sulphates`:  Sulfate conten of wine.
+*  `TotalSulfurDioxide`:  Total Sulfur Dioxide of Wine.
+*  `VolatileAcidity `:  Volatile Acid content of wine.
+*  `pH`:   pH of wine.
+
+There is a theoretical effect for `LabelAppeal`, which suggests many consumers purchase based on the visual appeal of the wine label design. Higher numbers suggest better sales. Additionally, a high number captured by the `STARS` variable is theorized to suggest high sales. 
+
+## Dependencies
+
+Replication of our work requires the following packages in Rstudio:
+
+```{r, echo=F, message=F, warning=F, error=F, comment=F}
+# Set working directory
+try(setwd("~/GitHub/621/HW5"))
+# Requirements for formatting and augmenting default settings for chunks. 
+library(knitr)
+library(kableExtra)
+library(default)
+knitr::opts_chunk$set(echo=F, message=F, warning=F, error=F, comment=F) 
+default(kable_styling)  <- list(bootstrap_options = c("basic"), 
+                                position = "center", 
+                                full_width = T,
+                                font_size = NULL)
+default(row_spec)  <- list(row = 0:0, bold = T)
+```
+
+```{r, echo=T}
+library(psych) 
+library(randomForest)
+library(corrplot)
+library(caret)
+library(MASS)
+library(dplyr) 
+library(tidyr)
+library(AER)
+library(ggplot2)
+library(reshape2)
+library(pROC)
+library(Metrics)
+```
+
+# PART 1: DATA EXPLORATION
+
+First, we read the data as a csv and then examined the below variable from the `training` dataset. 
+
+```{r echo=T}
+training <- as.data.frame(read.csv("/Users/Olga/Desktop/DataMining/HW5/wine-training-data.csv"))
+test <- as.data.frame(read.csv("/Users/Olga/Desktop/DataMining/HW5/wine-evaluation-data.csv"))
+dim(training)
+```
+
+The data set contains 12,795 cases, 13 predictors, 1 response variable and INDEX column. Each case is a commerically available wine, with the response variable being the number of cases purchased by restaurants and wine shops. 12 predictors are related to chemical properties of wine and 2 related to rating and design.
+
+## Summary Statistics 
+
+We look at summary of the data below. 
+
+```{r}
+training<-training[,-1]
+summary <- round(describe(training, skew = F), 2)
+summary %>% kable() %>% kable_styling() %>% row_spec()
+```
+
+```{r}
+sapply(training, function(y) sum(length(which(is.na(y)))))/nrow(training)*100
+```
+
+As we see 8 variables have missing values. The % of missing values vary from 3.08%(pH) to 26.25%(STARS). These values require imputation ot exclution to conduct further analysis, except variable STARS as we think that these variables should be equal to 0 star rating.
+
+## Distribution Of Continious Variables
+
+Below, we examine the distribution of continious variables using histograms and density plots for each variable.
+
+```{r, fig.height=4, cache=T}
+cont_vars <- training %>% dplyr::select(-c(TARGET, LabelAppeal, AcidIndex, STARS))
+cont_vars %>%
+  gather() %>%                            
+  ggplot(aes(value)) +                   
+  geom_histogram(aes(y =..density..,      
+                     fill=..count..))+
+  geom_density(col="black") +
+  scale_fill_gradient()+                  # Apply gradient to count
+  facet_wrap(~key, ncol = 3,              # Plot in separate panels
+             scales = 'free') 
+```
+
+Most variables appear to be fairly normally distributed with a small spread. There is very little skew in all of these predictors.
+
+
+## Poisson Distributions (binomial) for a discrete variables.
+
+```{r, fig.height=4, cache=T}
+discr_vars <- training %>% dplyr::select(c(TARGET, LabelAppeal, AcidIndex, STARS))
+discr_vars %>%
+  gather() %>%                            # Convert to key-value pairs
+  ggplot(aes(value)) +                    # Plot the values
+  geom_histogram(aes(y =..density..,      
+                     fill=..count..))+
+  geom_density(col="black") +
+  scale_fill_gradient()+                  # Apply gradient to count
+  facet_wrap(~key, ncol = 3,              # Plot in separate panels
+             scales = 'free') 
+```
+
+
+
+## Correlation Plot Matrix
+
+**Scatter plot matrix with the `pairs` function does not seem useful given the amount of variables. Recommend using the ggplot correlation plot matrix, which shows linear relationship between the predictor and response variables.** 
+
+The correlation plot matrix below shows linear relationship between the predictor and response variables. 
+
+```{r, cache=T, fig.height=4}
+melt = melt(training, id.vars='TARGET')
+ggplot(melt) +
+  geom_jitter(aes(value,TARGET, colour=TARGET)) + 
+  geom_smooth(aes(value,TARGET), method=lm, se=FALSE) +
+  facet_wrap(~variable, scales="free_x", ncol = 3)
+```
+
+"LabelAppeal", 'AcidIndex' and "STARS show some correlation with target variable. 
+It seems that ratings given by by experts and bottle aesthetics of the wine have a greater effect on the decision to purchase or not rather than any of the chemical properties (except 'AcidIndex' )
+
+## Correlation  
+
+We can see our correlation matrix below. A dark blue circle represents a strong positive relationship and a dark red circle represents a strong negative relationship between two variables. 
+
+```{r, fig.height=3}
+results1 <- training %>%
+  select_if(is.numeric) %>% 
+  cor(method = 'pearson', use = 'complete.obs')
+corrplot(results1, method = 'circle')
+```
+
+There is no strong collinearity in a data set.
+
+# PART 2: DATA TRANSFORMATION
+
+Handling missing vales
+
+First of all we need to convert NAs in STARS variables to zero as we believe that NAs in STARS variable represent stars wine rating.
+
+```{r, fig.height=3}
+training$STARS[is.na(training$STARS)] <- 0
+```
+
+The nature of the training data set is that the predictors have very little skew, and the majority of values being centered around the mean. Taking into account that condition we can remove NAs or impute mean/median. Selecting the impute of mean/median will allow us just to add more values which are going to be centered around the mean. That's why we think that we can remove the rest of NAs.
+
+```{r, fig.height=3}
+training <- data.frame(training[complete.cases(training), ])
+```
+
+```{r, fig.height=3}
+replace_mean <- function(x){
+  x <- as.numeric(as.character(x))
+  x[is.na(x)] = mean(x, na.rm=TRUE)
+  return(x)
+}
+
+training_mean <- apply(training, 2, replace_mean)
+training_mean <- as.data.frame(training_mean)
+```
+
+The distribution of variables plot after NAs correction and deletion.
+
+```{r, cache=T, fig.height=4}
+training %>%
+  gather() %>%                            # Convert to key-value pairs
+  ggplot(aes(value)) +                    # Plot the values
+  geom_histogram(aes(y =..density..,      
+                     fill=..count..))+
+  geom_density(col="black") +
+  scale_fill_gradient()+                  # Apply gradient to count
+  facet_wrap(~key, ncol = 3,              # Plot in separate panels
+             scales = 'free') 
+```
+
+"training" data set does not contain meaninless values (negative ones when only positive ones are possible).
+Log or square root can help with transformation of skewed predictors. In our case it is "AcidIndex"
+
+# PART 3: BUILD MODELS 
+
+## Poisson Regression 
+
+Target variable is a discrete variable, in this case, a simple transformation cannot produce normally distributed errors. The alternative is to use a Poisson model or one of its variants (negative binomial model).
+
+Poisson model assumptions: 
+
+- the errors follow a Poisson, not a normal, distribution;
+
+- it models the natural log of the response variable, ln(Y), as a linear function of the coefficients;
+
+- the mean and variance of the errors are equal
+
+### Model 0
+
+Building a poisson model based on data set where rows containing NAs were deleted.
+
+```{r, cache=T, fig.height=4}
+model_0 <-glm(TARGET ~ ., family="poisson", data=training)
+summary(model_0)
+vif(model_0)
+```
+
+model_0 has AIC - 31705. There is no significant multicollinearity.
+
+### Model 1
+
+Building a poisson model based on data set where rows containing NAs were replaced with mean.
+
+```{r, cache=T, fig.height=4}
+model_1 <-glm(TARGET ~ ., family="poisson", data=training_mean)
+summary(model_1)
+vif(model_1)
+```
+
+As we see both models shows same AIC - 31705. We belive that happens for the reason discussed in the part "data transformation" - handling missing values.
+There is no significant multicollinearity.
+
+### Model 2
+
+Building a model based on the selected important variables using varImp() from caret package.
+
+
+```{r, cache=T, fig.height=4}
+# prepare training scheme
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model <- train(TARGET~., data=training, method="glm",  trControl=control)
+# estimate variable importance
+importance <- varImp(model, scale=FALSE)
+# summarize importance
+print(importance)
+plot(importance)
+```
+
+The most important variables is STARS which has 76 out of 100 scores, LbelAppeal - 26 and AcidIndex- 19. The rest variables are significantly leass important.
+
+Model 2 will be built based on the most important variables only: STARS, LabelAppeal, AcidIndex
+
+```{r, cache=T, fig.height=4}
+model_2 <-glm(TARGET ~ STARS + LabelAppeal + AcidIndex, family="poisson", data=training_mean)
+summary(model_2)
+vif(model_2)
+```
+
+Model slighly deteriorated (based on AIC value), but not significanly and we used only 3 variables instead of 12.
+There is no significant multicollinearity.
+
+## Negative Binomial Regression
+
+Negative binomial regression is for modeling count variables, usually for over-dispersed count outcome variables, that is when the conditional variance exceeds the conditional mean.
+
+Before building Negative Binomial Regression we need to check if there is any evidence of overdispertion.
+
+```{r, cache=T, fig.height=4}
+dispersiontest(model_0)
+```
+
+The test shows that overdispersion takes place. In case with overdispertion Negative Binomial Regression may produce better model. 
+
+### Model 3
+
+Negative Binomial Regression model will be built using all variables.
+
+```{r, cache=T, fig.height=4}
+model_3 <- glm.nb(TARGET ~., data=training)
+summary(model_3)
+```
+
+The AIC is 31708 and it is similar that we have achived with Poisson model (AIC - 31705).
+
+### Model 4
+
+Negative Binomial Regression model will be built using only the most important variables and taking log of AcidIndex (as AcidIndex is lightly skewed).
+
+```{r, cache=T, fig.height=4}
+model_4 <- glm.nb(TARGET ~ STARS + LabelAppeal + log(AcidIndex), data=training)
+summary(model_4)
+```
+
+The AIC of the model is 31777 which is slightly higher than the result achived with Poisson model (31739).
+
+## Multiple Linear Regression
+
+### Model 5
+
+Multiple Linear Regression model will be built using all variables.
+
+```{r, cache=T, fig.height=4}
+model_5 <- glm(TARGET ~ ., family="gaussian", data=training)
+summary(model_5)
+```
+
+The AIC of the model is 29572 which is significantly lower than the result achived with Poisson or Negative Binomial Regression models.
+
+### Model 6
+
+Multiple Linear Regression model will be built using only the most important variables.
+
+```{r, cache=T, fig.height=4}
+model_6 <- glm(TARGET ~ STARS + LabelAppeal + AcidIndex, family="gaussian", data=training)
+summary(model_6)
+```
+
+The AIC of the model is 29637 which is significantly lower than the result achived with Poisson or Negative Binomial Regression models.
+
+# PART 4: SELECT MODELS
+
+## Model Evaluation
+
+We are going to evaluate models based on the following criteria: AIC, BIC and Average Squared Error
+
+Splitting "training" data set on "train.data"" and "test.data"" in order to assess models using average squared error. Here is the piece of the randomly selected "test.data" from the "training" data set.
+
+```{r, echo = FALSE}
+set.seed(123)
+training.samples <- training$TARGET %>%
+createDataPartition(p = 0.6, list = FALSE)
+train.data  <- training[training.samples, ]
+test.data <- training[-training.samples, ]
+head(test.data)
+dim(test.data)
+```
+
+The results of the models evaluations are presented in the following table:
+
+```{r, cache=T, fig.height=4}
+pd <- predict(model_0, test.data)
+m0<-cbind(AIC=AIC(model_0),BIC=BIC(model_0),Sq.Error = mse(test.data$TARGET,pd))
+
+pd <- predict(model_1, test.data)
+m1<-cbind(AIC=AIC(model_1),BIC=BIC(model_1),Sq.Error = mse(test.data$TARGET,pd))
+
+pd <- predict(model_2, test.data)
+m2<-cbind(AIC=AIC(model_2),BIC=BIC(model_2),Sq.Error = mse(test.data$TARGET,pd))
+
+pd <- predict(model_3, test.data)
+m3<-cbind(AIC=AIC(model_3),BIC=BIC(model_3),Sq.Error = mse(test.data$TARGET,pd))
+
+pd <- predict(model_4, test.data)
+m4<-cbind(AIC=AIC(model_4),BIC=BIC(model_4),Sq.Error = mse(test.data$TARGET,pd))
+
+pd <- predict(model_5, test.data)
+m5<-cbind(AIC=AIC(model_5),BIC=BIC(model_5),Sq.Error = mse(test.data$TARGET,pd))
+
+pd <- predict(model_6, test.data)
+m6<-cbind(AIC=AIC(model_6),BIC=BIC(model_6),Sq.Error = mse(test.data$TARGET,pd))
+
+summary = rbind(m0, m1, m2, m3, m4, m5, m6)
+rownames(summary) <- c("model_0","model_1", 'model_2',"model_3","model_4","model_5", "model_6")
+summary
+```
+
+model_5 and model_6 have the best performance based on the selected criteria. It is unexpected taking into account the nature of the TARGET variable and detected overdispertion. 
+
+We select model_5 as the best model.
+
+## Forecasting
+
+Preparing test data set for the prediction - applying the same transformations as for the training data set: handling NAs.
+
+```{r, cache=T, fig.height=4}
+test$STARS[is.na(test$STARS)] <- 0
+```
+
+Making prediction using the best model (overall): model_5
+
+```{r, cache=T, fig.height=4}
+test$TARGET<- round(predict(model_5, test, type='response'),0)
+head(test)
+```
+
+Making prediction using the best model among count regression models (as requested in the HW): model_0
+
+```{r, cache=T, fig.height=4}
+test$TARGET2<- round(predict(model_0, test, type='response'),0)
+head(test)
+```
