@@ -84,8 +84,8 @@ library(Metrics)
 First, we read the data as a csv and then examined the below variable from the `training` dataset. 
 
 ```{r echo=T}
-training <- as.data.frame(read.csv("/Users/Olga/Desktop/DataMining/HW5/wine-training-data.csv"))
-test <- as.data.frame(read.csv("/Users/Olga/Desktop/DataMining/HW5/wine-evaluation-data.csv"))
+training <- as.data.frame(read.csv("wine-training-data.csv"))
+test <- as.data.frame(read.csv("wine-evaluation-data.csv"))
 dim(training)
 ```
 
